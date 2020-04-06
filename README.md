@@ -1,6 +1,6 @@
 # Formi
 
-Describe document structure in a template. Create, manipulate and query documents following this structure. 
+Document schema and manipulation with functional lenses
 
 # Usage
 
@@ -126,7 +126,7 @@ val document = template.empty
 // )
 ```
  
-The document content can be access through lenses:1  
+The document content can be access through lenses. Because of the dynamic document structure, lens creation may fail.
 
 ```scala
 import com.akolov.forms.DocumentLens._
@@ -134,8 +134,8 @@ import com.akolov.forms.DocumentLens._
 val lensName = lensFor(template.body, Path( Indexed( "Head", 0),  Indexed( "name", 0)))
 // lensName: Either[errors.DocumentError, GFLens] = Right(
 //   GFLens(
-//     Some(GLens(com.akolov.forms.lenses.Lens$$anon$2@3f08249d)),
-//     Some(FLens(com.akolov.forms.lenses.Lens$$anon$2@3528de8c))
+//     Some(GLens(com.akolov.forms.lenses.Lens$$anon$2@72216187)),
+//     Some(FLens(com.akolov.forms.lenses.Lens$$anon$2@3d6c52ba))
 //   )
 // )
 
@@ -169,7 +169,7 @@ for {
   name <- fieldLens.get(document)
 } yield name
 // res2: Either[errors.DocumentError, SingleFieldValue] = Left(
-//   IndexError("Can't read: 1 from 1")
+//   IndexError("Element index out of bounds: 1 from 1")
 // )
 ```
 ## Developer's notes

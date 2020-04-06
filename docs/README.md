@@ -1,6 +1,6 @@
 # Formi
 
-Describe document structure in a template. Create, manipulate and query documents following this structure. 
+Document schema and manipulation with functional lenses
 
 # Usage
 
