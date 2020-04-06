@@ -1,0 +1,90 @@
+import Dependencies._
+
+val scala213 = "2.13.1"
+
+val basicSettings = Seq(
+  scalaVersion              := scala213,
+  organization              := "com.akolov",
+  scalafmtOnCompile         := true,
+  fork in Test              := true,
+  parallelExecution in Test := true,
+  libraryDependencies ++= Seq(
+    "org.log4s" %% "log4s" % "1.8.2"
+  ),
+  scalacOptions ++= Seq(
+    "-deprecation",
+    "-encoding",
+    "UTF-8",
+    "-Ymacro-annotations"
+  )
+)
+
+val circeLib: Seq[ModuleID] = {
+  def circe(name: String, version: String = "0.12.3") =
+    "io.circe" %% s"circe-$name" % version
+
+  Seq(
+    circe("core"),
+    circe("generic"),
+    //    circe("generic-extras"),
+    circe("parser"),
+    circe("parser") % Test
+  )
+}
+
+def module(moduleName: String) =
+  Project(moduleName, file(moduleName))
+    .settings(
+      basicSettings ++ Seq(
+        name               := s"formi-$moduleName",
+        releaseTagName     := s"formi-$moduleName-${(version in ThisBuild).value}",
+        crossScalaVersions := Seq(scala213)
+      )
+    )
+
+lazy val core = module("core")
+  .settings(
+    Seq(
+      libraryDependencies ++=
+        Seq(
+          "org.typelevel" %% "cats-free" % "2.1.1",
+          "org.scalatest" %% "scalatest" % "3.1.1" % "test",
+          "org.scalamock" %% "scalamock" % "4.4.0" % "test"
+        )
+    ),
+    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full)
+  )
+  .enablePlugins(JavaAppPackaging)
+
+lazy val circe = module("circe")
+  .dependsOn(core)
+  .settings(
+    basicSettings ++ Seq(
+      libraryDependencies ++= circeLib
+    ),
+    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full)
+  )
+  .enablePlugins(JavaAppPackaging)
+
+lazy val docs = project
+  .in(file("project-docs")) // important: it must not be docs/
+  .dependsOn(core)
+  .enablePlugins(MdocPlugin)
+  .settings(
+    basicSettings ++ Seq(
+      crossScalaVersions := Nil,
+      publish / skip     := true
+    )
+
+    //    mdocOut := new java.io.File("README.md")
+  )
+
+val curricula = (project in file("."))
+  .aggregate(
+    circe,
+    core
+  )
+  .settings(
+    name    := "formi",
+    publish := {}
+  )
