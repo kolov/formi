@@ -6,7 +6,7 @@ Document schema and manipulation with functional lenses
 
 Create a template, use it to create an empty document from it:
 
-```scala mdoc
+```scala mdoc:silent
 
 import com.akolov.forms._
 
@@ -66,7 +66,7 @@ for {
 
 ```
 
-Seting and reading may fail because of the schema multiplicity:
+Setting and reading may fail because of the schema multiplicity:
 
 ```scala mdoc
 for {

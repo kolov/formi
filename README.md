@@ -7,6 +7,7 @@ Document schema and manipulation with functional lenses
 Create a template, use it to create an empty document from it:
 
 ```scala
+
 import com.akolov.forms._
 
 val template = Template( 
@@ -36,94 +37,8 @@ val template = Template(
       )
     )
   )
-// template: Template = Template(
-//   "Simple CV",
-//   GroupElement(
-//     "content",
-//     List(
-//       GroupElement(
-//         "Head",
-//         List(
-//           FieldElement("name", Text(Some(50), None), Multiplicity(1, Some(1))),
-//           FieldElement("title", Text(Some(50), None), Multiplicity(1, Some(1)))
-//         ),
-//         Multiplicity(1, Some(1))
-//       ),
-//       GroupElement(
-//         "Links",
-//         List(
-//           GroupElement(
-//             "Link",
-//             List(
-//               FieldElement(
-//                 "linkName",
-//                 Text(Some(12), None),
-//                 Multiplicity(1, Some(1))
-//               ),
-//               FieldElement(
-//                 "linkValue",
-//                 Text(Some(25), None),
-//                 Multiplicity(1, Some(1))
-//               )
-//             ),
-//             Multiplicity(1, None)
-//           )
-//         ),
-//         Multiplicity(1, Some(1))
-//       )
-//     ),
-//     Multiplicity(1, Some(1))
-//   )
-// )
 
 val document = template.empty
-// document: SingleGroupValue = SingleGroupValue(
-//   List(
-//     (
-//       "Head",
-//       MultiGroupValue(
-//         List(
-//           SingleGroupValue(
-//             List(
-//               ("name", MultiFieldValue(List(SingleFieldValue(None)))),
-//               ("title", MultiFieldValue(List(SingleFieldValue(None))))
-//             )
-//           )
-//         )
-//       )
-//     ),
-//     (
-//       "Links",
-//       MultiGroupValue(
-//         List(
-//           SingleGroupValue(
-//             List(
-//               (
-//                 "Link",
-//                 MultiGroupValue(
-//                   List(
-//                     SingleGroupValue(
-//                       List(
-//                         (
-//                           "linkName",
-//                           MultiFieldValue(List(SingleFieldValue(None)))
-//                         ),
-//                         (
-//                           "linkValue",
-//                           MultiFieldValue(List(SingleFieldValue(None)))
-//                         )
-//                       )
-//                     )
-//                   )
-//                 )
-//               )
-//             )
-//           )
-//         )
-//       )
-//     )
-//   )
-// )
 ```
  
 The document content can be access through lenses. Because of the dynamic document structure, lens creation may fail.
@@ -154,7 +69,7 @@ for {
 // )
 ```
 
-Seting and reading may fail because of the schema multiplicity:
+Setting and reading may fail because of the schema multiplicity:
 
 ```scala
 for {
