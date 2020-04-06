@@ -131,13 +131,6 @@ The document content can be access through lenses. Because of the dynamic docume
 ```scala
 import com.akolov.forms.DocumentLens._
 
-val lensName = lensFor(template.body, Path( Indexed( "Head", 0),  Indexed( "name", 0)))
-// lensName: Either[errors.DocumentError, GFLens] = Right(
-//   GFLens(
-//     Some(GLens(com.akolov.forms.lenses.Lens$$anon$2@72216187)),
-//     Some(FLens(com.akolov.forms.lenses.Lens$$anon$2@3d6c52ba))
-//   )
-// )
 
 for {
   fieldLens <- fieldLensFor(template.body, Path( Indexed( "Head", 0),  Indexed( "name", 0)))
@@ -148,7 +141,7 @@ for {
 // )
 ```
 
-Name can be set: 
+Any field can be set and queried: 
 
 ```scala
 for {
@@ -161,7 +154,7 @@ for {
 // )
 ```
 
-The lens takes into account the multiplicity:
+Seting and reading may fail because of the schema multiplicity:
 
 ```scala
 for {

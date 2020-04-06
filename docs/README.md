@@ -46,7 +46,6 @@ The document content can be access through lenses. Because of the dynamic docume
 ```scala mdoc
 import com.akolov.forms.DocumentLens._
 
-val lensName = lensFor(template.body, Path( Indexed( "Head", 0),  Indexed( "name", 0)))
 
 for {
   fieldLens <- fieldLensFor(template.body, Path( Indexed( "Head", 0),  Indexed( "name", 0)))
@@ -55,7 +54,7 @@ for {
 
 ```
 
-Name can be set: 
+Any field can be set and queried: 
 
 ```scala mdoc
 
@@ -67,7 +66,7 @@ for {
 
 ```
 
-The lens takes into account the multiplicity:
+Seting and reading may fail because of the schema multiplicity:
 
 ```scala mdoc
 for {
