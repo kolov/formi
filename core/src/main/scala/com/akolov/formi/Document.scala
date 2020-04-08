@@ -1,11 +1,11 @@
-package com.akolov.forms
+package com.akolov.formi
 import cats.implicits._
-import com.akolov.forms.errors.DocumentError
-import com.akolov.forms.errors._
-import com.akolov.forms.lenses.Lens
+import com.akolov.formi.errors.DocumentError
+import com.akolov.formi.errors._
+import com.akolov.formi.lenses.Lens
 import org.log4s.getLogger
 
-case class Document(templateElement: TemplateElement[SingleElementValue], innerValue: ElementValue)
+case class Document(templateElement: TemplateElement[SValue], innerValue: InputValue)
 
 case class Indexed(name: String, index: Int = 0)
 case class Path(path: List[Indexed])
@@ -15,7 +15,7 @@ object Path {
 }
 
 object DocumentOps {
-  def fromTemplate(te: TemplateElement[SingleElementValue]) = Document(te, te.emptySingle)
+  def fromTemplate(te: TemplateElement[SValue]) = Document(te, te.emptySingle)
 }
 
 trait DocumentLens {
@@ -81,9 +81,9 @@ trait DocumentLens {
     override def set(p: P, a: A): Either[DocumentError, P] = Left(e)
   }
 
-  def nameLens(groupElement: GroupElement, name: String): Either[DocumentError, (AnyElement, SingleToMultiGroupLens)] =
+  def nameLens(groupElement: Group, name: String): Either[DocumentError, (Element, SingleToMultiGroupLens)] =
     groupElement.fields.find(_.label === name) match {
-      case Some(ge @ GroupElement(_, _, _)) =>
+      case Some(ge @ Group(_, _, _)) =>
         val lens = new DocumentLens[SingleGroupValue, MultiGroupValue] {
           override def get(p: SingleGroupValue): Either[DocumentError, MultiGroupValue] = {
             p.get(name) match {
@@ -97,7 +97,7 @@ trait DocumentLens {
             p.update(name, a)
         }
         (ge, SingleToMultiGroupLens.GLens(lens)).asRight
-      case Some(fe @ FieldElement(_, _, m)) =>
+      case Some(fe @ Field(_, _, m)) =>
         val lens = new DocumentLens[SingleGroupValue, MultiFieldValue] {
           override def get(p: SingleGroupValue): Either[DocumentError, MultiFieldValue] = {
             p.get(name) match {
@@ -120,15 +120,13 @@ trait DocumentLens {
 
   def toMultiGroup(x: MultiElementValue[SingleGroupValue]): MultiGroupValue = MultiGroupValue(x.values)
 
-  def nameIndexLens(
-    groupElement: GroupElement,
-    indexed: Indexed): Either[DocumentError, (AnyElement, SingleGroupLens)] = {
+  def nameIndexLens(groupElement: Group, indexed: Indexed): Either[DocumentError, (Element, SingleGroupLens)] = {
     nameLens(groupElement, indexed.name) match {
-      case Right((fieldElement: FieldElement, lens: SingleToMultiGroupLens.FLens)) =>
+      case Right((fieldElement: Field, lens: SingleToMultiGroupLens.FLens)) =>
         val fLens = SingleGroupLens.FLens(
           Lens.compose(lens.lens, indexLens(fieldElement, indexed.index).map[MultiFieldValue](a => a)(toMultiField)))
         (fieldElement, fLens).asRight
-      case Right((groupElement: GroupElement, lens: SingleToMultiGroupLens.GLens)) =>
+      case Right((groupElement: Group, lens: SingleToMultiGroupLens.GLens)) =>
         val glens = SingleGroupLens.GLens(
           Lens.compose(lens.lens, indexLens(groupElement, indexed.index).map[MultiGroupValue](a => a)(toMultiGroup)))
         (groupElement, glens).asRight
@@ -136,9 +134,7 @@ trait DocumentLens {
     }
   }
 
-  def indexLens[SV <: SingleElementValue](
-    groupElement: TemplateElement[SV],
-    ix: Int): DocumentLens[MultiElementValue[SV], SV] =
+  def indexLens[SV <: SValue](element: TemplateElement[SV], ix: Int): DocumentLens[MultiElementValue[SV], SV] =
     new DocumentLens[MultiElementValue[SV], SV] {
 
       override def get(p: MultiElementValue[SV]): Either[DocumentError, SV] = {
@@ -149,35 +145,36 @@ trait DocumentLens {
       override def set(p: MultiElementValue[SV], a: SV): Either[DocumentError, MultiElementValue[SV]] =
         if (ix < p.values.length)
           MultiElementValue((p.values.take(ix) :+ a) ++ p.values.drop(ix + 1)).asRight
-        else if (groupElement.multiplicity.isUnderMax(ix)) {
-          MultiElementValue(p.values ++ List.fill(ix - p.values.length)(groupElement.emptySingle)).asRight // FIXME
+        else if (ix == p.values.length && element.multiplicity.isUnderMax(ix)) {
+          // insert the first available slot
+          MultiElementValue(p.values ++ Vector.fill(ix - p.values.length)(element.emptySingle)).asRight
         } else
-          IndexError(s"Can't set $ix with multiplicity ${groupElement.multiplicity}").asLeft
+          IndexError(s"Can't set at index 2 $ix with multiplicity ${element.multiplicity}").asLeft
     }
 
-  def fieldIndexLens(fieldElement: FieldElement, ix: Int): DocumentLens[MultiFieldValue, SingleFieldValue] = {
+  def fieldIndexLens(fieldElement: Field, ix: Int): DocumentLens[MultiFieldValue, SingleFieldValue] = {
     indexLens[SingleFieldValue](fieldElement, ix)
       .map[MultiFieldValue](identity)(toMultiField)
   }
 
-  def groupIndexLens(ge: GroupElement, ix: Int): DocumentLens[MultiGroupValue, SingleGroupValue] =
+  def groupIndexLens(ge: Group, ix: Int): DocumentLens[MultiGroupValue, SingleGroupValue] =
     indexLens[SingleGroupValue](ge, ix)
       .map[MultiGroupValue](identity)(toMultiGroup)
 
-  def lensFor(groupElement: GroupElement, path: Path): Either[DocumentError, GFLens] = {
-    case class Acc(templateElement: TemplateElement[SingleElementValue], lens: Either[DocumentError, GFLens])
+  def lensFor(groupElement: Group, path: Path): Either[DocumentError, GFLens] = {
+    case class Acc(templateElement: TemplateElement[SValue], lens: Either[DocumentError, GFLens])
 
     val acc = path.path.foldLeft(Acc(groupElement, GFLens.empty.asRight)) {
       // if error, shortcut
       case (acc @ Acc(_, Left(_)), _) => acc
       // Firs element, group
-      case (Acc(ge @ GroupElement(l, fs, m), Right(gfLens)), indexed) =>
+      case (Acc(ge @ Group(l, fs, m), Right(gfLens)), indexed) =>
         logger.debug(s"Enter lens calculation iteration at element: ${ge.label}, path: $indexed")
         nameIndexLens(ge, indexed) match {
-          case Right((fieldTemplate: FieldElement, flens: SingleGroupLens.FLens)) =>
+          case Right((fieldTemplate: Field, flens: SingleGroupLens.FLens)) =>
             logger.debug(s"outcome: Field, nextTemplate: ${fieldTemplate.label} lens: ${flens}")
             Acc(fieldTemplate, gfLens.append(flens))
-          case Right((groupTemplate: GroupElement, glens: SingleGroupLens.GLens)) =>
+          case Right((groupTemplate: Group, glens: SingleGroupLens.GLens)) =>
             logger.debug(s"outcome: Group, nextTemplate: ${groupTemplate.label} lens: ${glens}")
             logger.debug(s"nextLens:  ${gfLens.append(glens)}")
             Acc(groupTemplate, gfLens.append(glens))
@@ -189,7 +186,7 @@ trait DocumentLens {
     acc.lens
   }
 
-  def fieldLensFor(groupElement: GroupElement, path: Path) =
+  def fieldLensFor(groupElement: Group, path: Path) =
     lensFor(groupElement, path).flatMap(_.asFieldLens)
 }
 object DocumentLens extends DocumentLens

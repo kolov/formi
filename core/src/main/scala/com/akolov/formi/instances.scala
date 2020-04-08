@@ -1,5 +1,5 @@
 import cats.Show
-import com.akolov.forms.{MultiFieldValue, SingleGroupValue}
+import com.akolov.formi.{MultiFieldValue, SingleGroupValue}
 
 trait ShowInstances {
 

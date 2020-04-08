@@ -1,4 +1,4 @@
-package com.akolov.forms
+package com.akolov.formi
 
 package errors
 
