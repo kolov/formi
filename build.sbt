@@ -9,7 +9,10 @@ val basicSettings = Seq(
   fork in Test              := true,
   parallelExecution in Test := true,
   libraryDependencies ++= Seq(
-    "org.log4s" %% "log4s" % "1.8.2"
+    "org.log4s" %% "log4s"         % "1.8.2",
+    "ch.qos.logback"               % "logback-classic" % "1.2.3",
+    "org.scalatest" %% "scalatest" % "3.1.1" % "test",
+    "org.scalamock" %% "scalamock" % "4.4.0" % "test"
   ),
   scalacOptions ++= Seq(
     "-deprecation",
@@ -47,9 +50,7 @@ lazy val core = module("core")
     Seq(
       libraryDependencies ++=
         Seq(
-          "org.typelevel" %% "cats-free" % "2.1.1",
-          "org.scalatest" %% "scalatest" % "3.1.1" % "test",
-          "org.scalamock" %% "scalamock" % "4.4.0" % "test"
+          "org.typelevel" %% "cats-free" % "2.1.1"
         )
     ),
     addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full)
@@ -59,9 +60,7 @@ lazy val core = module("core")
 lazy val circe = module("circe")
   .dependsOn(core)
   .settings(
-    basicSettings ++ Seq(
-      libraryDependencies ++= circeLib
-    ),
+    libraryDependencies ++= circeLib,
     addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full)
   )
   .enablePlugins(JavaAppPackaging)

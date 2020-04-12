@@ -5,7 +5,7 @@ import com.akolov.formi._
 import com.akolov.formi.errors.{DocumentError, _}
 import org.log4s.getLogger
 
-case class Document(templateElement: TemplateElement[SValue], innerValue: InputValue)
+case class Document(templateElement: TemplateElement[SValue], value: SValue)
 
 case class Indexed(name: String, index: Int = 0)
 case class Path(path: List[Indexed])

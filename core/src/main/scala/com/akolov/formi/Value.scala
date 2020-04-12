@@ -1,15 +1,11 @@
 package com.akolov.formi
 
-import java.time.LocalDate
-
 import com.akolov.formi.errors._
 import org.log4s.getLogger
 import cats.implicits._
 
-sealed trait InputValue
-sealed trait SValue extends InputValue
-sealed trait MValue extends InputValue
-
+sealed trait SValue
+sealed trait MValue
 sealed abstract class MultiElementValue[S <: SValue](val values: Seq[S]) extends MValue
 
 case class MultiFieldValue(override val values: Seq[SingleFieldValue])

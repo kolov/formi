@@ -2,10 +2,6 @@ package com.akolov.formi
 
 import java.time.LocalDate
 
-import com.akolov.formi.errors._
-import org.log4s.getLogger
-import cats.implicits._
-
 case class Multiplicity(minOccurs: Int, maxOccurs: Option[Int] = None) {
   def isUnderMax(n: Int): Boolean = maxOccurs.map(n < _).getOrElse(true)
 }
@@ -68,4 +64,3 @@ case class Group(
     MultiGroupValue(Vector.fill(Math.max(multiplicity.minOccurs, 1))(self.emptySingle))
   }
 }
-
