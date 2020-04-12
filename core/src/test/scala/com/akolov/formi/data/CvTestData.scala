@@ -1,4 +1,6 @@
-package com.akolov.formi
+package com.akolov.formi.data
+
+import com.akolov.formi._
 
 trait CvTestData {
   val nameFieldElement: Field = Field(label = "name", desc = Text(maxLength = Some(50), pattern = None))

@@ -4,8 +4,14 @@ package lenses
 
 import org.log4s.getLogger
 
+/*
+Every lens operation may succeed or fail
+ */
 trait Lens[P, E, A] { self =>
   def get(p: P): Either[E, A]
+  /*
+  Update existing element, empty or not, or insert a new element if schema allows
+   */
   def set(p: P, a: A): Either[E, P]
 
   def modify(p: P)(f: A => A): Either[E, P] = {

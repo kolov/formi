@@ -1,12 +1,13 @@
 package com.akolov.formi
 
 import cats.implicits._
-import com.akolov.formi.DocumentLens._
+import com.akolov.formi.data.CvTestData
+import com.akolov.formi.lenses.DocumentLens._
 import org.log4s.getLogger
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
 
-class LensMultiplicityTest extends AnyFlatSpecLike with Matchers with CvTestData {
+class LensMultiplicitySpec extends AnyFlatSpecLike with Matchers with CvTestData {
   val logger = getLogger
 
   "fieldLens" should "get empty value 0 from empty field 0 to 1" in {

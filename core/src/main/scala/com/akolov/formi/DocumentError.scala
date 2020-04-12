@@ -10,3 +10,4 @@ case class IndexError(desc: String) extends DocumentError
 case class InconsistentDocument(desc: String) extends DocumentError
 case class AttemptTOAppendAfterFLens(desc: String = "") extends DocumentError
 case class BadValue(desc: String = "") extends DocumentError
+case class InternalError(desc: String) extends DocumentError

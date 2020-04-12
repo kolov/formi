@@ -13,8 +13,8 @@ trait FormCodecs {
   implicit val encoderDateField: Encoder[Date] = deriveEncoder
   implicit val decoderDateField: Decoder[Date] = deriveDecoder
 
-  implicit val encoderInputParameters: Encoder[Input] = deriveEncoder
-  implicit val decoderInputParameters: Decoder[Input] = deriveDecoder
+  implicit val encoderInputParameters: Encoder[InputDesc] = deriveEncoder
+  implicit val decoderInputParameters: Decoder[InputDesc] = deriveDecoder
 
   implicit val encoderEntry: Encoder[TemplateElement[SingleGroupValue]] = deriveEncoder
   implicit val decoderEntry: Decoder[TemplateElement[SingleGroupValue]] = deriveDecoder

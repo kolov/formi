@@ -1,13 +1,15 @@
 package com.akolov.formi
 
-import com.akolov.formi.DocumentLens._
+import com.akolov.formi.lenses.DocumentLens._
 import org.scalatest.matchers.should.Matchers
 import cats.implicits._
+import com.akolov.formi.data.CvTestData
 import com.akolov.formi.errors.IndexError
+import com.akolov.formi.lenses.{Indexed, Path}
 import org.log4s.getLogger
 import org.scalatest.flatspec.AnyFlatSpecLike
 
-class BasicLensTest extends AnyFlatSpecLike with Matchers with CvTestData {
+class BasicLensSpec extends AnyFlatSpecLike with Matchers with CvTestData {
   val logger = getLogger
 
   val cvGroupElement: Group = testTemplate.body
