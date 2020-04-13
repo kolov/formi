@@ -22,13 +22,11 @@ trait FormCodecs {
   implicit lazy val SingleValueEncoder = deriveEncoder[FieldValue]
   implicit lazy val SingleValueeDecoder = deriveDecoder[FieldValue]
 
-
   implicit lazy val GroupValueEncoder: Encoder[GroupValue] = deriveEncoder[GroupValue]
   implicit lazy val GroupValueValueecoder: Decoder[GroupValue] = deriveDecoder[GroupValue]
 
   implicit lazy val ValueEncoder: Encoder[Value] = deriveEncoder[Value]
   implicit lazy val Valuecoder: Decoder[Value] = deriveDecoder[Value]
-
 
   implicit lazy val SingleGroupValueEncoder: Encoder[SingleGroupValue] = deriveEncoder[SingleGroupValue]
   implicit lazy val SingleGroupValueecoder: Decoder[SingleGroupValue] = deriveDecoder[SingleGroupValue]

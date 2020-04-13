@@ -19,7 +19,8 @@ val basicSettings = Seq(
     "-encoding",
     "UTF-8",
     "-Ymacro-annotations"
-  )
+  ),
+  addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full)
 )
 
 val circeLib: Seq[ModuleID] = {
@@ -29,7 +30,6 @@ val circeLib: Seq[ModuleID] = {
   Seq(
     circe("core"),
     circe("generic"),
-    //    circe("generic-extras"),
     circe("parser"),
     circe("parser") % Test
   )
@@ -47,21 +47,17 @@ def module(moduleName: String) =
 
 lazy val core = module("core")
   .settings(
-    Seq(
-      libraryDependencies ++=
-        Seq(
-          "org.typelevel" %% "cats-free" % "2.1.1"
-        )
-    ),
-    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full)
+    libraryDependencies ++=
+      Seq(
+        "org.typelevel" %% "cats-free" % "2.1.1"
+      )
   )
   .enablePlugins(JavaAppPackaging)
 
 lazy val circe = module("circe")
   .dependsOn(core)
   .settings(
-    libraryDependencies ++= circeLib,
-    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full)
+    libraryDependencies ++= circeLib
   )
   .enablePlugins(JavaAppPackaging)
 
@@ -73,9 +69,8 @@ lazy val docs = project
     basicSettings ++ Seq(
       crossScalaVersions := Nil,
       publish / skip     := true
-    )
-
-    //    mdocOut := new java.io.File("README.md")
+    ),
+    mdocOut := new java.io.File(".")
   )
 
 val curricula = (project in file("."))

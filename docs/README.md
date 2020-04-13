@@ -8,27 +8,27 @@ Create a template, use it to create an empty document from it:
 
 ```scala mdoc:silent
 
-import com.akolov.forms._
+import com.akolov.formi._
 
 val template = Template( 
   "Simple CV",
-  GroupElement(
+  Group(
     "content",
     List(
-      GroupElement(
+      Group(
         "Head",
         fields = List(
-          FieldElement(label = "name", desc = Text(maxLength = Some(50), pattern = None), multiplicity= Multiplicity.Once),
-           FieldElement(label = "title", desc = Text(Some(50)))
+          Field(label = "name", desc = Text(maxLength = Some(50), pattern = None)),
+           Field(label = "title", desc = Text(Some(50)))
         )), 
-      GroupElement(
+      Group(
         "Links",
         fields = List(
-          GroupElement(
+          Group(
               "Link",
               fields = List(
-                FieldElement(label = "linkName", desc = Text(Some(12))),
-                FieldElement(label = "linkValue", desc = Text(Some(25)))
+                Field(label = "linkName", desc = Text(Some(12))),
+                Field(label = "linkValue", desc = Text(Some(25)))
               ),
               multiplicity = Multiplicity.AtLeastOnce
             )
@@ -44,11 +44,11 @@ val document = template.empty
 The document content can be access through lenses. Because of the dynamic document structure, lens creation may fail.
 
 ```scala mdoc
-import com.akolov.forms.DocumentLens._
+import com.akolov.formi.lenses.DocumentLenses._
 
 
 for {
-  fieldLens <- fieldLensFor(template.body, Path( Indexed( "Head", 0),  Indexed( "name", 0)))
+  fieldLens <- fieldLensFor(template.body,Path(  "Head", 0, "name"))
   name <- fieldLens.get(document)
 } yield name
 
@@ -59,8 +59,8 @@ Any field can be set and queried:
 ```scala mdoc
 
 for {
-  fieldLens <- fieldLensFor(template.body, Path( Indexed( "Head", 0),  Indexed( "name", 0)))
-  updated <- fieldLens.set(document, SingleFieldValue("George Costanza"))
+  fieldLens <- fieldLensFor(template.body, Path(  "Head", 0, "name"))
+  updated <- fieldLens.set(document, FieldValue("George Costanza"))
   name <- fieldLens.get(updated)
 } yield name
 
@@ -70,7 +70,7 @@ Setting and reading may fail because of the schema multiplicity:
 
 ```scala mdoc
 for {
-  fieldLens <- fieldLensFor(template.body, Path( Indexed( "Head", 1),  Indexed( "name", 0)))
+  fieldLens <- fieldLensFor(template.body,Path(  "Head", 0, "name"))
   name <- fieldLens.get(document)
 } yield name
 ```

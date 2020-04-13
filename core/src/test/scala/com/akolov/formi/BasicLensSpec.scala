@@ -1,11 +1,9 @@
 package com.akolov.formi
 
-import com.akolov.formi.lenses.DocumentLens._
+import com.akolov.formi.lenses.DocumentLenses._
 import org.scalatest.matchers.should.Matchers
 import cats.implicits._
 import com.akolov.formi.data.CvTestData
-import com.akolov.formi.errors.IndexError
-import com.akolov.formi.lenses.{Indexed, Named, Path}
 import org.log4s.getLogger
 import org.scalatest.flatspec.AnyFlatSpecLike
 
@@ -74,7 +72,7 @@ class BasicLensSpec extends AnyFlatSpecLike with Matchers with CvTestData {
     val cvSIngleGroupValue = cvGroupElement.singleEmpty
 
     val eitherLens = for {
-      gfLens <- lensFor(cvGroupElement, Path(List(Indexed("Head")), Named("name")))
+      gfLens <- lensFor(cvGroupElement, Path(List(Indexed("Head")), Some(Named("name"))))
       fl <- gfLens.asFieldLens
     } yield fl
     println(eitherLens)
@@ -87,7 +85,7 @@ class BasicLensSpec extends AnyFlatSpecLike with Matchers with CvTestData {
     val cvSingleGroupValue = cvGroupElement.singleEmpty
 
     val newValue = for {
-      gfLens <- lensFor(cvGroupElement, Path(List(Indexed("Head")), Named("name")))
+      gfLens <- lensFor(cvGroupElement, Path(List(Indexed("Head")), Some(Named("name"))))
       fl <- gfLens.asFieldLens
       updated <- fl.set(cvSingleGroupValue, FieldValue("George Costanza"))
       newValue <- fl.get(updated)

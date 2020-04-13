@@ -2,37 +2,43 @@ package com.akolov.formi.lenses
 
 import cats.implicits._
 import com.akolov.formi._
-import com.akolov.formi.errors.{DocumentError, _}
+import com.akolov.formi.errors._
 import org.log4s.getLogger
 
 case class Document(templateElement: TemplateElement, value: Value)
-
-trait PathElement
-case class Indexed(name: String, index: Int = 0) extends PathElement
-case class Named(name: String) extends PathElement
-case class Path(groups: List[Indexed], named: Named)
 
 object DocumentOps {
   def fromTemplate(te: TemplateElement) = Document(te, te.empty)
 }
 
-trait DocumentLens {
+trait DocumentLenses {
   val logger = getLogger
 
   type DocumentLens[P, A] = Lens[P, DocumentError, A]
 
-  sealed trait XxxLens
+  trait PathElement
+  case class Indexed(name: String, index: Int = 0) extends PathElement
+  case class Named(name: String) extends PathElement
+  case class Path(groups: Seq[Indexed], named: Option[Named])
 
-  case class GLens(lens: DocumentLens[SingleGroupValue, SingleGroupValue]) extends XxxLens
+  object Path {
+    def apply(ixs: Indexed*) = new Path(ixs, None)
+    def apply(name: String) = new Path(List(), Some(Named(name)))
+    def apply(g1: String, ix1: Int, f1: String) = new Path(List(Indexed(g1, ix1)), Some(Named(f1)))
+  }
 
-  case class FLens(lens: DocumentLens[SingleGroupValue, FieldValue]) extends XxxLens
+  sealed trait SingleGroupLens
+
+  case class GLens(lens: DocumentLens[SingleGroupValue, SingleGroupValue]) extends SingleGroupLens
+
+  case class FLens(lens: DocumentLens[SingleGroupValue, FieldValue]) extends SingleGroupLens
 
   case class GFLens(gLens: Option[GLens], fLens: Option[FLens]) { self =>
 
     /*
     Append a new lens at the end.
      */
-    def append(l: XxxLens): Either[DocumentError, GFLens] = l match {
+    def append(l: SingleGroupLens): Either[DocumentError, GFLens] = l match {
       case gl @ GLens(g) =>
         self.fLens match {
           case None =>
@@ -94,10 +100,6 @@ trait DocumentLens {
         IndexError(s"""No such name: $name. Available: [${groupElement.fields.map(_.label).mkString(",")}]""").asLeft
     }
 
-//  def toMultiField(x: MultiElementValue[FieldValue]): MultiFieldValue = MultiFieldValue(x.values)
-
-  def toMultiGroup(x: GroupValue): GroupValue = GroupValue(x.values)
-
   def nameIndexLens(groupElement: Group, name: String, ix: Int): Either[DocumentError, (Element, GLens)] =
     groupElement.fields.find(_.label === name) match {
       case Some(ge @ Group(_, _, _)) =>
@@ -132,8 +134,7 @@ trait DocumentLens {
       override def set(p: GroupValue, a: SingleGroupValue): Either[DocumentError, GroupValue] =
         if (ix < p.values.length) {
           GroupValue((p.values.take(ix).toVector :+ a) ++ p.values.drop(ix + 1)).asRight
-        }
-        else if (ix == p.values.length && element.multiplicity.isUnderMax(ix)) {
+        } else if (ix == p.values.length && element.multiplicity.isUnderMax(ix)) {
           // insert the first available slot only
           GroupValue(p.values ++ Vector.fill(ix - p.values.length)(element.singleEmpty)).asRight
         } else
@@ -163,22 +164,29 @@ trait DocumentLens {
               (ge, Left(e))
             case nameIndexLens => (ge, InternalError(s"Unexpected: $nameIndexLens").asLeft)
           }
-        case ((fe @ Field(_, _), Left(_)), index) =>
-          (fe, PathError(s"Group element expected for ${index}").asLeft)
       }
     acc match {
       case (_, Left(e)) => Left(e)
       case (ge @ Group(l, fs, m), Right(glens)) =>
-        nameLens(ge, path.named.name).map {
-          case (_, flens) =>
-            GFLens(glens, Some(flens))
+        path.named match {
+          case Some(Named(name)) =>
+            nameLens(ge, name).map {
+              case (_, flens) =>
+                GFLens(glens, Some(flens))
+            }
+          case None => GFLens(glens, None).asRight
         }
 
-      case (fe @ Field(l, m), _) => PathError(" Index incomplete").asLeft
+      case (fe @ Field(l, m), _) => InternalError("Field: unexpected").asLeft
     }
   }
 
-  def fieldLensFor(groupElement: Group, path: Path) =
+  def fieldLensFor(groupElement: Group, path: Path): Either[DocumentError, DocumentLens[SingleGroupValue, FieldValue]] =
     lensFor(groupElement, path).flatMap(_.asFieldLens)
+
+  def groupLensFor(
+    groupElement: Group,
+    path: Path): Either[DocumentError, DocumentLens[SingleGroupValue, SingleGroupValue]] =
+    lensFor(groupElement, path).flatMap(_.asGroupLens)
 }
-object DocumentLens extends DocumentLens
+object DocumentLenses extends DocumentLenses

@@ -1,22 +1,49 @@
 package com.akolov.formi
 
 import cats.implicits._
-import com.akolov.formi.errors.IndexError
-import com.akolov.formi.lenses.DocumentLens._
-import com.akolov.formi.lenses.{Indexed, Path}
 import org.log4s.getLogger
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
 
 class DocumentSpec extends AnyFlatSpecLike with Matchers {
   val logger = getLogger
-//
-//  val nameFieldElement: Field =
-//    Field(label = "v", desc = Text(maxLength = Some(50), pattern = None), multiplicity = Multiplicity.AtLeastOnce)
 
-//  "fieldLens" should "get empty contained value from empty field value" in {
-//    val emptyFieldValue = nameFieldElement.emptyField
-//    val lens = fieldIndexLens(nameFieldElement, 0)
-//    lens.get(emptyFieldValue) shouldEqual FieldValue.Empty.asRight
-//  }
+  "field renderer" should "render field with valu" in {
+    val nameFieldElement: Field =
+      Field(label = "name", Text())
+    val entry = DocumentEntry.render(nameFieldElement, FieldValue("George"))
+    entry shouldEqual FieldDocumentEntry("name", Some("George")).asRight
+  }
+  "group renderer" should "render error on wrong value " in {
+    val firstName: Field = Field("firstName", Text())
+    val secondName: Field = Field("secondName", Text())
+    val group = Group("name", List(firstName, secondName))
+    val entry = DocumentEntry.render(group, FieldValue("George"))
+    entry.isLeft shouldEqual true
+  }
+
+  "group renderer" should "render error on missing group value value " in {
+    val firstName: Field = Field("firstName", Text())
+    val secondName: Field = Field("secondName", Text())
+    val group = Group("name", List(firstName, secondName))
+    val entry = DocumentEntry.render(group, GroupValue(Vector(SingleGroupValue(Map("xxx" -> FieldValue("George"))))))
+    entry.isLeft shouldEqual true
+  }
+
+  "group renderer" should "render error on good value " in {
+    val firstName: Field = Field("firstName", Text())
+    val secondName: Field = Field("secondName", Text())
+    val group = Group("name", List(firstName, secondName))
+    val entry = DocumentEntry.render(
+      group,
+      GroupValue(
+        Vector(SingleGroupValue(Map("firstName" -> FieldValue("George"), "secondName" -> FieldValue("Costanza"))))))
+    entry shouldEqual GroupDocumentEntry(
+      "name",
+      Vector(
+        SingleGroupDocumentEntry(
+          "name",
+          List(FieldDocumentEntry("firstName", Some("George")), FieldDocumentEntry("secondName", Some("Costanza")))))
+    ).asRight
+  }
 }

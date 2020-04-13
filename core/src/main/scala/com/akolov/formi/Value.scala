@@ -34,5 +34,5 @@ object FieldValue {
 }
 
 case class Template(name: String, body: Group) {
-  def empty = body.empty
+  def empty = body.singleEmpty
 }
