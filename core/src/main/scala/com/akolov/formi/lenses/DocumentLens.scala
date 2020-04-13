@@ -5,12 +5,6 @@ import com.akolov.formi._
 import com.akolov.formi.errors._
 import org.log4s.getLogger
 
-case class Document(templateElement: TemplateElement, value: Value)
-
-object DocumentOps {
-  def fromTemplate(te: TemplateElement) = Document(te, te.empty)
-}
-
 trait DocumentLenses {
   val logger = getLogger
 
@@ -176,7 +170,6 @@ trait DocumentLenses {
             }
           case None => GFLens(glens, None).asRight
         }
-
       case (fe @ Field(l, m), _) => InternalError("Field: unexpected").asLeft
     }
   }

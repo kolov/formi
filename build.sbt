@@ -61,9 +61,16 @@ lazy val circe = module("circe")
   )
   .enablePlugins(JavaAppPackaging)
 
+lazy val html = module("html")
+  .dependsOn(core)
+  .settings(
+    libraryDependencies ++= circeLib
+  )
+  .enablePlugins(JavaAppPackaging)
+
 lazy val docs = project
   .in(file("project-docs")) // important: it must not be docs/
-  .dependsOn(core)
+  .dependsOn(core, html)
   .enablePlugins(MdocPlugin)
   .settings(
     basicSettings ++ Seq(
@@ -76,7 +83,8 @@ lazy val docs = project
 val curricula = (project in file("."))
   .aggregate(
     circe,
-    core
+    core,
+    html
   )
   .settings(
     name    := "formi",
