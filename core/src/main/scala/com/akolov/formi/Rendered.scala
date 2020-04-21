@@ -11,7 +11,7 @@ object Rendered {
 
   case class FieldElement(label: String, value: Option[String]) extends Element
   case class GroupElement(label: String, entries: Seq[SingleGroupElement]) extends Element
-  case class SingleGroupElement(label: String, entries: Seq[Element]) extends Element
+  case class SingleGroupElement(label: String, entries: Seq[Element])
 
   def render(el: TemplateElement, value: Value): Either[DocumentError, Element] = (el, value) match {
     case (f @ Field(_, _), fv @ FieldValue(_)) => renderField(f, fv)
