@@ -20,6 +20,9 @@ val basicSettings = Seq(
     "UTF-8",
     "-Ymacro-annotations"
   ),
+  publishTo := Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
+  credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),
+  licenses := List("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full)
 )
 
