@@ -16,32 +16,23 @@ trait FormCodecs {
   implicit val encoderInputParameters: Encoder[InputDesc] = deriveEncoder
   implicit val decoderInputParameters: Decoder[InputDesc] = deriveDecoder
 
-  implicit val encoderEntry: Encoder[TemplateElement[SingleGroupValue]] = deriveEncoder
-  implicit val decoderEntry: Decoder[TemplateElement[SingleGroupValue]] = deriveDecoder
+  implicit val encoderEntry: Encoder[TemplateElement] = deriveEncoder
+  implicit val decoderEntry: Decoder[TemplateElement] = deriveDecoder
 
-  implicit lazy val SingleValueEncoder = deriveEncoder[SingleFieldValue]
-  implicit lazy val SingleValueeDecoder = deriveDecoder[SingleFieldValue]
+  implicit lazy val SingleValueEncoder = deriveEncoder[FieldValue]
+  implicit lazy val SingleValueeDecoder = deriveDecoder[FieldValue]
 
-  implicit lazy val SingleGroupValueEncoder: Encoder[SingleGroupValue] = ??? //deriveEncoder[SingleGroupValue]
-  implicit lazy val SingleGroupValueecoder: Decoder[SingleGroupValue] = ??? //deriveDecoder[SingleGroupValue]
+  implicit lazy val GroupValueEncoder: Encoder[GroupValue] = deriveEncoder[GroupValue]
+  implicit lazy val GroupValueValueecoder: Decoder[GroupValue] = deriveDecoder[GroupValue]
+
+  implicit lazy val ValueEncoder: Encoder[Value] = deriveEncoder[Value]
+  implicit lazy val Valuecoder: Decoder[Value] = deriveDecoder[Value]
+
+  implicit lazy val SingleGroupValueEncoder: Encoder[SingleGroupValue] = deriveEncoder[SingleGroupValue]
+  implicit lazy val SingleGroupValueecoder: Decoder[SingleGroupValue] = deriveDecoder[SingleGroupValue]
 
   implicit lazy val FieldElementEncoder: Encoder[Field] = deriveEncoder[Field]
   implicit lazy val FieldElementDecoder: Decoder[Field] = deriveDecoder[Field]
-
-  implicit lazy val dsdsfdsf: Encoder[TemplateElement[SingleFieldValue]] =
-    deriveEncoder[TemplateElement[SingleFieldValue]]
-
-  implicit lazy val dfsdsgre: Decoder[TemplateElement[SingleFieldValue]] =
-    deriveDecoder[TemplateElement[SingleFieldValue]]
-
-  implicit lazy val dds: Encoder[TemplateElement[SingleGroupValue]] = deriveEncoder[TemplateElement[SingleGroupValue]]
-  implicit lazy val dfdf: Decoder[TemplateElement[SingleGroupValue]] = deriveDecoder[TemplateElement[SingleGroupValue]]
-
-  implicit lazy val sadsads: Encoder[TemplateElement[SValue]] =
-    deriveEncoder[TemplateElement[SValue]]
-
-  implicit lazy val sadsadsad: Decoder[TemplateElement[SValue]] =
-    deriveDecoder[TemplateElement[SValue]]
 
   implicit lazy val roupElementEncoder: Encoder[Group] = deriveEncoder[Group]
   implicit lazy val GroupElementDecoder: Decoder[Group] = deriveDecoder[Group]

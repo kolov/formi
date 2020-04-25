@@ -22,45 +22,29 @@ sealed trait Element
 /*
  * Element describing a single value of type SV
  */
-sealed trait TemplateElement[+SV <: SValue] extends Element {
+sealed trait TemplateElement extends Element {
   self =>
   val label: String;
-  val multiplicity: Multiplicity;
 
-  def emptySingle: SV
-
-  def empty: MValue
+  def empty: Value
 }
 
-case class Field(
-  override val label: String,
-  desc: InputDesc,
-  override val multiplicity: Multiplicity = Multiplicity.Once)
-    extends TemplateElement[SingleFieldValue] {
+case class Field(override val label: String, desc: InputDesc) extends TemplateElement {
   self =>
 
-  override def emptySingle: SingleFieldValue = SingleFieldValue.Empty
-
-  override def empty: MValue = emptyField
-
-  def emptyField: MultiFieldValue = MultiFieldValue(Vector.fill(Math.max(multiplicity.minOccurs, 1))(self.emptySingle))
+  override def empty: Value = FieldValue.Empty
 }
 
 case class Group(
   override val label: String,
-  fields: List[TemplateElement[SValue]],
-  override val multiplicity: Multiplicity = Multiplicity.Once)
-    extends TemplateElement[SingleGroupValue] {
+  fields: List[TemplateElement],
+  multiplicity: Multiplicity = Multiplicity.Once)
+    extends TemplateElement {
   self =>
 
-  override def emptySingle: SingleGroupValue = {
-    val value = fields.map(v => (v.label, v.empty))
-    SingleGroupValue(value)
-  }
+  def singleEmpty: SingleGroupValue = SingleGroupValue(fields.map(te => (te.label, te.empty)).toMap)
 
-  override def empty: MValue = emptyGroup
-
-  def emptyGroup: MultiGroupValue = {
-    MultiGroupValue(Vector.fill(Math.max(multiplicity.minOccurs, 1))(self.emptySingle))
+  override def empty: GroupValue = {
+    GroupValue(Vector.fill(Math.max(multiplicity.minOccurs, 1))(self.singleEmpty))
   }
 }

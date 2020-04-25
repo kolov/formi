@@ -1,55 +1,38 @@
 package com.akolov.formi
 
 import com.akolov.formi.errors._
-import org.log4s.getLogger
 import cats.implicits._
 
-sealed trait SValue
-sealed trait MValue
-sealed abstract class MultiElementValue[S <: SValue](val values: Seq[S]) extends MValue
+sealed trait Value
+case class GroupValue(values: Vector[SingleGroupValue]) extends Value
 
-case class MultiFieldValue(override val values: Seq[SingleFieldValue])
-    extends MultiElementValue[SingleFieldValue](values)
+case class FieldValue(value: Option[String]) extends Value
 
-case class MultiGroupValue(override val values: Seq[SingleGroupValue])
-    extends MultiElementValue[SingleGroupValue](values)
+case class SingleGroupValue(values: Map[String, Value]) {
 
-object MultiElementValue {
-  def apply[S <: SValue](l: Seq[S]): MultiElementValue[S] = new MultiElementValue[S](values = l) {}
-}
-
-case class SingleFieldValue(value: Option[String]) extends SValue
-
-case class SingleGroupValue(values: Seq[(String, MValue)]) extends SValue {
-  val logger = getLogger
-
-  def get(name: String): Either[DocumentError, MValue] = {
+  def get(name: String): Either[DocumentError, Value] = {
     values.find(_._1 === name) match {
       case None => PathError().asLeft
       case Some((_, v)) => v.asRight
     }
   }
 
-  def update(name: String, newValue: MValue): Either[DocumentError, SingleGroupValue] = {
-    values.foldLeft((false, List[(String, MValue)]())) {
-      case ((updated, acc), el @ (k, v)) =>
-        if (k === name) {
-          (true, acc :+ (name, newValue))
-        } else
-          (updated, acc :+ el)
-    } match {
-      case (false, _) => PathError(s"Update failed: no such field $name").asLeft
-      case (true, l) => SingleGroupValue(l).asRight
+  def update(name: String, newValue: Value): Either[DocumentError, SingleGroupValue] = {
+    (newValue, values.get(name)) match {
+      case (_, None) => PathError(s"Update failed: no such field $name").asLeft
+      case (GroupValue(_), Some(GroupValue(_))) => SingleGroupValue(values.updated(name, newValue)).asRight
+      case (FieldValue(_), Some(FieldValue(_))) => SingleGroupValue(values.updated(name, newValue)).asRight
+      case (_, _) => BadValue().asLeft
     }
   }
 }
 
-object SingleFieldValue {
-  val Empty = SingleFieldValue(None)
+object FieldValue {
+  val Empty = FieldValue(None)
 
-  def apply(s: String): SingleFieldValue = new SingleFieldValue(Some(s))
+  def apply(s: String): FieldValue = new FieldValue(Some(s))
 }
 
 case class Template(name: String, body: Group) {
-  def empty = body.emptySingle
+  def empty = body.singleEmpty
 }

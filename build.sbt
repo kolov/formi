@@ -19,7 +19,11 @@ val basicSettings = Seq(
     "-encoding",
     "UTF-8",
     "-Ymacro-annotations"
-  )
+  ),
+  publishTo := Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
+  credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),
+  licenses := List("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
+  addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full)
 )
 
 val circeLib: Seq[ModuleID] = {
@@ -29,7 +33,6 @@ val circeLib: Seq[ModuleID] = {
   Seq(
     circe("core"),
     circe("generic"),
-    //    circe("generic-extras"),
     circe("parser"),
     circe("parser") % Test
   )
@@ -47,41 +50,44 @@ def module(moduleName: String) =
 
 lazy val core = module("core")
   .settings(
-    Seq(
-      libraryDependencies ++=
-        Seq(
-          "org.typelevel" %% "cats-free" % "2.1.1"
-        )
-    ),
-    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full)
+    libraryDependencies ++=
+      Seq(
+        "org.typelevel" %% "cats-free" % "2.1.1"
+      )
   )
   .enablePlugins(JavaAppPackaging)
 
 lazy val circe = module("circe")
   .dependsOn(core)
   .settings(
-    libraryDependencies ++= circeLib,
-    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full)
+    libraryDependencies ++= circeLib
+  )
+  .enablePlugins(JavaAppPackaging)
+
+lazy val html = module("html")
+  .dependsOn(core)
+  .settings(
+    libraryDependencies ++= circeLib
   )
   .enablePlugins(JavaAppPackaging)
 
 lazy val docs = project
   .in(file("project-docs")) // important: it must not be docs/
-  .dependsOn(core)
+  .dependsOn(core, html)
   .enablePlugins(MdocPlugin)
   .settings(
     basicSettings ++ Seq(
       crossScalaVersions := Nil,
       publish / skip     := true
-    )
-
-    //    mdocOut := new java.io.File("README.md")
+    ),
+    mdocOut := new java.io.File(".")
   )
 
 val curricula = (project in file("."))
   .aggregate(
     circe,
-    core
+    core,
+    html
   )
   .settings(
     name    := "formi",
