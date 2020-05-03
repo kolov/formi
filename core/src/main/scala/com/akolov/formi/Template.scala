@@ -23,15 +23,11 @@ sealed trait Element
  * Element describing a single value of type SV
  */
 sealed trait TemplateElement extends Element {
-  self =>
   val label: String;
-
   def empty: Value
 }
 
 case class Field(override val label: String, desc: InputDesc) extends TemplateElement {
-  self =>
-
   override def empty: Value = FieldValue.Empty
 }
 

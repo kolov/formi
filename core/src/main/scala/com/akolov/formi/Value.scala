@@ -4,7 +4,7 @@ import com.akolov.formi.errors._
 import cats.implicits._
 
 sealed trait Value
-case class GroupValue(values: Vector[SingleGroupValue]) extends Value
+case class GroupValue(singleGroups: Seq[SingleGroupValue]) extends Value
 
 case class FieldValue(value: Option[String]) extends Value
 

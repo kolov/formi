@@ -34,9 +34,18 @@ trait FormCodecs {
   implicit lazy val FieldElementEncoder: Encoder[Field] = deriveEncoder[Field]
   implicit lazy val FieldElementDecoder: Decoder[Field] = deriveDecoder[Field]
 
-  implicit lazy val roupElementEncoder: Encoder[Group] = deriveEncoder[Group]
+  implicit lazy val groupElementEncoder: Encoder[Group] = deriveEncoder[Group]
   implicit lazy val GroupElementDecoder: Decoder[Group] = deriveDecoder[Group]
 
   implicit val encoderDocumentDefinition: Encoder[Template] = deriveEncoder
   implicit val decoderDocumentDefinition: Decoder[Template] = deriveDecoder
+
+  implicit lazy val FieldFormEntryEncoder: Encoder[FieldEntry] = deriveEncoder[FieldEntry]
+  implicit lazy val FieldFormEntryDecoder: Decoder[FieldEntry] = deriveDecoder[FieldEntry]
+  implicit lazy val GroupFormEntryEncoder: Encoder[GroupEntry] = deriveEncoder[GroupEntry]
+  implicit lazy val GroupFormEntryDecoder: Decoder[GroupEntry] = deriveDecoder[GroupEntry]
+  implicit lazy val FormEntryEncoder: Encoder[Entry] = deriveEncoder[Entry]
+  implicit lazy val FormEntryDecoder: Decoder[Entry] = deriveDecoder[Entry]
+  implicit lazy val SingleGroupFormEntryEncoder: Encoder[SingleGroupFormEntry] = deriveEncoder[SingleGroupFormEntry]
+  implicit lazy val SingleGroupFormEntryDecoder: Decoder[SingleGroupFormEntry] = deriveDecoder[SingleGroupFormEntry]
 }

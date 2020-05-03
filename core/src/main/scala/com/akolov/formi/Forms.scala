@@ -3,28 +3,32 @@ package com.akolov.formi
 import com.akolov.formi.errors.{BadValue, DocumentError, PathError}
 import cats.implicits._
 // Entry in a form
-trait FormEntry
+sealed trait Entry
+case class FieldEntry(label: String, desc: InputDesc, value: FieldValue) extends Entry
+case class GroupEntry(label: String, multiplicity: Multiplicity, entries: Seq[SingleGroupFormEntry]) extends Entry
 
-case class FieldFormEntry(label: String, desc: InputDesc, value: FieldValue) extends FormEntry
-case class GroupFormEntry(label: String, entries: Seq[SingleGroupFormEntry])
-
-case class SingleGroupFormEntry(label: String, entries: Seq[FormEntry]) extends FormEntry
+case class SingleGroupFormEntry(label: String, entries: Seq[Entry])
 
 object EntryForm {
 
-  def render(el: TemplateElement, value: Value): Either[DocumentError, FormEntry] = (el, value) match {
-    case (f @ Field(_, _), fv @ FieldValue(_)) => renderField(f, fv)
-    case (g @ Group(_, _, _), GroupValue(vals)) =>
-      vals
+  private def render(el: TemplateElement, value: Value): Either[DocumentError, Entry] = (el, value) match {
+    case (f: Field, fv: FieldValue) => renderField(f, fv)
+    case (g: Group, GroupValue(singleGroups)) =>
+      singleGroups
         .map(sgv => renderSingleGroup(g, sgv))
+        .toList
         .sequence
-        .map(vals => SingleGroupFormEntry(g.label, vals))
+        .map { vals =>
+          GroupEntry(g.label, g.multiplicity, vals)
+        }
     case _ => BadValue().asLeft
   }
-  def renderField(field: Field, fieldValue: FieldValue) = FieldFormEntry(field.label, field.desc, fieldValue).asRight
+
+  private def renderField(field: Field, fieldValue: FieldValue) =
+    FieldEntry(field.label, field.desc, fieldValue).asRight
 
   def renderSingleGroup(group: Group, values: SingleGroupValue) = {
-    val entries: Either[DocumentError, List[FormEntry]] = group.fields.map { te =>
+    val entries: Either[DocumentError, List[Entry]] = group.fields.map { te =>
       val v: Either[PathError, Value] =
         values.values.get(te.label).map(Right(_)).getOrElse(Left(PathError("No such name")))
       v.flatMap { vv =>

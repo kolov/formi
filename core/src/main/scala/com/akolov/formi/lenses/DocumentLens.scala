@@ -121,16 +121,16 @@ trait DocumentLenses {
     new DocumentLens[GroupValue, SingleGroupValue] {
 
       override def get(p: GroupValue): Either[DocumentError, SingleGroupValue] = {
-        if (ix < p.values.length) p.values(ix).asRight
+        if (ix < p.singleGroups.length) p.singleGroups(ix).asRight
         else IndexError(s"Can't get at index $ix with multiplicity ${element.multiplicity}").asLeft
       }
 
       override def set(p: GroupValue, a: SingleGroupValue): Either[DocumentError, GroupValue] =
-        if (ix < p.values.length) {
-          GroupValue((p.values.take(ix).toVector :+ a) ++ p.values.drop(ix + 1)).asRight
-        } else if (ix == p.values.length && element.multiplicity.isUnderMax(ix)) {
+        if (ix < p.singleGroups.length) {
+          GroupValue((p.singleGroups.take(ix).toVector :+ a) ++ p.singleGroups.drop(ix + 1)).asRight
+        } else if (ix == p.singleGroups.length && element.multiplicity.isUnderMax(ix)) {
           // insert the first available slot only
-          GroupValue(p.values ++ Vector.fill(ix - p.values.length)(element.singleEmpty)).asRight
+          GroupValue(p.singleGroups ++ Vector.fill(ix - p.singleGroups.length)(element.singleEmpty)).asRight
         } else
           //error beyond the first slot
           IndexError(s"Can't set at index $ix with multiplicity ${element.multiplicity}").asLeft

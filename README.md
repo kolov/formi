@@ -78,7 +78,11 @@ for {
 ```
 ## Developer's notes
 
-    sbt '+ publishSigned'
+To debug gpg errors: 
+
+    export GPG_TTY=$(tty)
+   
+    sbt publishSigned
     sbt sonatypeReleaseAll
 
     sbt  docs/mdoc // project-docs/target/mdoc/README.md

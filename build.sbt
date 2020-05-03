@@ -2,6 +2,22 @@ import Dependencies._
 
 val scala213 = "2.13.1"
 
+ThisBuild / pomIncludeRepository := { _ => false }
+ThisBuild / publishTo := {
+  val nexus = "https://oss.sonatype.org/"
+  if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
+  else Some("releases" at nexus + "service/local/staging/deploy/maven2")
+}
+ThisBuild / credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials")
+ThisBuild / licenses := List("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt"))
+ThisBuild / scmInfo := Some(
+  ScmInfo(
+    url("https://github.com/kolov/formi"),
+    "scm:git@github.com:kolov/formi.git"
+  )
+)
+
+
 val basicSettings = Seq(
   scalaVersion              := scala213,
   organization              := "com.akolov",
@@ -20,9 +36,8 @@ val basicSettings = Seq(
     "UTF-8",
     "-Ymacro-annotations"
   ),
-  publishTo := Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
-  credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),
-  licenses := List("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
+//  publishTo := Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
+
   addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full)
 )
 
@@ -91,5 +106,5 @@ val curricula = (project in file("."))
   )
   .settings(
     name    := "formi",
-    publish := {}
+    publish / skip := true
   )

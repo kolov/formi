@@ -2,7 +2,6 @@ package com.akolov.formi
 
 import com.akolov.formi.errors.{BadValue, DocumentError, PathError}
 import cats.implicits._
-// Entry in a form
 
 case class Document(template: Group, body: SingleGroupValue)
 
@@ -16,10 +15,11 @@ object Rendered {
   def render(el: TemplateElement, value: Value): Either[DocumentError, Element] = (el, value) match {
     case (f @ Field(_, _), fv @ FieldValue(_)) => renderField(f, fv)
     case (g @ Group(_, _, _), fv @ GroupValue(vals)) =>
-      val allEntries: Either[DocumentError, Vector[SingleGroupElement]] = vals
+      vals
         .map(sgv => renderSingleGroup(g, sgv))
+        .toList
         .sequence
-      allEntries.map(vals => GroupElement(g.label, vals))
+        .map(vals => GroupElement(g.label, vals))
     case _ => BadValue().asLeft
   }
   def renderField(field: Field, fieldValue: FieldValue) = FieldElement(field.label, fieldValue.value).asRight

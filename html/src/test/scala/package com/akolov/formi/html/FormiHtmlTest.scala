@@ -10,6 +10,7 @@ class FormiHtmlTest extends AnyFlatSpecLike with Matchers {
   implicit class stringOp(s: String) {
     def stripAll = s.replaceAll("[(\\s)*|\\|]", "")
   }
+
   "renderer" should "render text field" in {
     val fieldElement = FieldElement("name", Some("George Costanza"))
     val rendered: Div = FormiHtml.renderField(fieldElement)
