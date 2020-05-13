@@ -3,7 +3,7 @@ package com.akolov.formi
 import cats.implicits._
 import com.akolov.formi.data.CvTestData
 import com.akolov.formi.errors.DocumentError
-import com.akolov.formi.lenses.DocumentLenses
+import com.akolov.formi.lenses._
 import org.log4s.getLogger
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers

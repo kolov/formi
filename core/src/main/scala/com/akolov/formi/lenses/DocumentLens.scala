@@ -2,6 +2,7 @@ package com.akolov.formi.lenses
 
 import cats.implicits._
 import com.akolov.formi._
+import com.akolov.formi.lenses._
 import com.akolov.formi.errors._
 import org.log4s.getLogger
 
@@ -9,17 +10,6 @@ trait DocumentLenses {
   val logger = getLogger
 
   type DocumentLens[P, A] = Lens[P, DocumentError, A]
-
-  trait PathElement
-  case class Indexed(name: String, index: Int = 0) extends PathElement
-  case class Named(name: String) extends PathElement
-  case class Path(groups: Seq[Indexed], named: Option[Named])
-
-  object Path {
-    def apply(ixs: Indexed*) = new Path(ixs, None)
-    def apply(name: String) = new Path(List(), Some(Named(name)))
-    def apply(g1: String, ix1: Int, f1: String) = new Path(List(Indexed(g1, ix1)), Some(Named(f1)))
-  }
 
   sealed trait SingleGroupLens
 

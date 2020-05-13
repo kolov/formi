@@ -5,9 +5,7 @@ import cats.implicits._
 // Entry in a form
 sealed trait Entry
 case class FieldEntry(label: String, desc: InputDesc, value: FieldValue) extends Entry
-case class GroupEntry(label: String, multiplicity: Multiplicity, entries: Seq[SingleGroupFormEntry]) extends Entry
-
-case class SingleGroupFormEntry(label: String, entries: Seq[Entry])
+case class GroupEntry(label: String, multiplicity: Multiplicity, groupInstances: Seq[Seq[Entry]]) extends Entry
 
 object EntryForm {
 
@@ -28,13 +26,12 @@ object EntryForm {
     FieldEntry(field.label, field.desc, fieldValue).asRight
 
   def renderSingleGroup(group: Group, values: SingleGroupValue) = {
-    val entries: Either[DocumentError, List[Entry]] = group.fields.map { te =>
+    group.fields.map { te =>
       val v: Either[PathError, Value] =
         values.values.get(te.label).map(Right(_)).getOrElse(Left(PathError("No such name")))
       v.flatMap { vv =>
         render(te, vv)
       }
     }.sequence
-    entries.map(e => SingleGroupFormEntry(group.label, e))
   }
 }
