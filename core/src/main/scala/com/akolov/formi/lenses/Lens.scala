@@ -4,14 +4,14 @@ package lenses
 
 import org.log4s.getLogger
 
-/*
-Every lens operation may succeed or fail
- */
+/**
+  Lens for formi documents with schema
+  Creating a lens may succeed or fail
+  Every lens operation may succeed or fail
+  */
 trait Lens[P, E, A] { self =>
   def get(p: P): Either[E, A]
-  /*
-  Update existing element, empty or not, or insert a new element if schema allows
-   */
+
   def set(p: P, a: A): Either[E, P]
 
   def modify(p: P)(f: A => A): Either[E, P] = {
@@ -20,11 +20,13 @@ trait Lens[P, E, A] { self =>
     }
   }
 
-  def map[B](fbp: B => P)(fpb: P => B): Lens[B, E, A] = new Lens[B, E, A] {
-    override def get(b: B): Either[E, A] = self.get(fbp(b))
-
-    override def set(b: B, a: A): Either[E, B] = self.set(fbp(b), a).map(fpb)
-  }
+//  def map[B](fbp: B => P)(fpb: P => B): Lens[B, E, A] = new Lens[B, E, A] {
+//    override def get(b: B): Either[E, A] = self.get(fbp(b))
+//
+//    override def set(b: B, a: A): Either[E, B] = self.set(fbp(b), a).map(fpb)
+//
+//    override def insert(p: B): Either[E, B] = ???
+//  }
 }
 
 object Lens {
@@ -40,7 +42,7 @@ object Lens {
         _ = logger.debug(s"Got ${r} from ${a}")
       } yield r
 
-    override def set(p: P, b: B): Either[E, P] = {
+    override def set(p: P, b: B): Either[E, P] =
       for {
         a <- lp.get(p)
         _ = logger.debug(s"Got ${a} from ${p}")
@@ -49,6 +51,5 @@ object Lens {
         np <- lp.set(p, na)
         _ = logger.debug(s"Set ${na} in $p, got ${np}")
       } yield np
-    }
   }
 }

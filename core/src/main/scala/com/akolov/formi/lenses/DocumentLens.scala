@@ -10,6 +10,11 @@ trait DocumentLenses {
 
   type DocumentLens[P, A] = Lens[P, DocumentError, A]
 
+  sealed trait GroupLensOperation
+  case object Editing extends GroupLensOperation
+  case object Inserting extends GroupLensOperation
+  case object Deleting extends GroupLensOperation
+
   sealed trait SingleGroupLens
 
   case class GLens(lens: DocumentLens[SingleGroupValue, SingleGroupValue]) extends SingleGroupLens
@@ -42,12 +47,13 @@ trait DocumentLenses {
       case (None, None) => NotFieldPath("").asLeft
     }
 
-    def asGroupLens: Either[DocumentError, DocumentLens[SingleGroupValue, SingleGroupValue]] = (gLens, fLens) match {
-      case (Some(_), Some(_)) => NotGroupPath().asLeft
-      case (Some(g), None) => g.lens.asRight
-      case (None, Some(f)) => NotGroupPath().asLeft
-      case (None, None) => NotGroupPath().asLeft
-    }
+    def asGroupLens: Either[DocumentError, DocumentLens[SingleGroupValue, SingleGroupValue]] =
+      (gLens, fLens) match {
+        case (Some(_), Some(_)) => NotGroupPath().asLeft
+        case (Some(g), None) => g.lens.asRight
+        case (None, Some(f)) => NotGroupPath().asLeft
+        case (None, None) => NotGroupPath().asLeft
+      }
   }
 
   object GFLens {
@@ -83,7 +89,11 @@ trait DocumentLenses {
         IndexError(s"""No such name: $name. Available: [${groupElement.fields.map(_.label).mkString(",")}]""").asLeft
     }
 
-  def nameIndexLens(groupElement: Group, name: String, ix: Int): Either[DocumentError, (Element, GLens)] =
+  def nameIndexLens(
+    groupElement: Group,
+    name: String,
+    ix: Int,
+    op: GroupLensOperation): Either[DocumentError, (Element, GLens)] =
     groupElement.fields.find(_.label === name) match {
       case Some(ge @ Group(_, _, _)) =>
         val lens = new DocumentLens[SingleGroupValue, GroupValue] {
@@ -98,7 +108,7 @@ trait DocumentLenses {
           override def set(p: SingleGroupValue, a: GroupValue): Either[DocumentError, SingleGroupValue] =
             p.update(name, a)
         }
-        val composed = Lens.compose(lens, indexLens(ge, ix))
+        val composed = Lens.compose(lens, indexLens(ge, ix, op))
         (ge, GLens(composed)).asRight
       case Some(_ @Field(_, _)) =>
         IndexError(s"""Field $name can't have index""").asLeft
@@ -106,7 +116,7 @@ trait DocumentLenses {
         IndexError(s"""No such name: $name. Available: [${groupElement.fields.map(_.label).mkString(",")}]""").asLeft
     }
 
-  def indexLens(element: Group, ix: Int): DocumentLens[GroupValue, SingleGroupValue] =
+  def indexLens(element: Group, ix: Int, op: GroupLensOperation): DocumentLens[GroupValue, SingleGroupValue] =
     new DocumentLens[GroupValue, SingleGroupValue] {
 
       override def get(p: GroupValue): Either[DocumentError, SingleGroupValue] = {
@@ -114,18 +124,48 @@ trait DocumentLenses {
         else IndexError(s"Can't get at index $ix with multiplicity ${element.multiplicity}").asLeft
       }
 
-      override def set(p: GroupValue, a: SingleGroupValue): Either[DocumentError, GroupValue] =
-        if (ix < p.singleGroups.length) {
-          GroupValue((p.singleGroups.take(ix).toVector :+ a) ++ p.singleGroups.drop(ix + 1)).asRight
-        } else if (ix == p.singleGroups.length && element.multiplicity.isUnderMax(ix)) {
+      override def set(p: GroupValue, a: SingleGroupValue): Either[DocumentError, GroupValue] = {
+        op match {
+          case Editing =>
+            if (ix < p.singleGroups.length) {
+              val before = p.singleGroups.take(ix).toVector
+              val after = p.singleGroups.drop(ix + 1).toVector
+              GroupValue((before :+ a) ++ after).asRight
+            } else
+              IndexError(s"Can't set at index $ix: ${p.singleGroups.length} elements").asLeft
+
+          case Inserting =>
+            if (ix <= p.singleGroups.length) {
+              val before = p.singleGroups.take(ix).toVector
+              val after = p.singleGroups.drop(ix + 1).toVector
+              GroupValue((before :+ a) ++ after).asRight
+            } else
+              IndexError(s"Can't insert at index $ix: ${p.singleGroups.length} elements").asLeft
+
+          case Deleting =>
+            if (ix <= p.singleGroups.length - 1) {
+              val before = p.singleGroups.take(ix).toVector
+              val after = p.singleGroups.drop(ix + 1).toVector
+              GroupValue(before ++ after).asRight
+            } else
+              IndexError(s"Can't insert at index $ix: ${p.singleGroups.length} elements").asLeft
+        }
+      }
+
+      def insert(p: GroupValue, depth: Int, a: SingleGroupValue): Either[DocumentError, GroupValue] = {
+        if (depth > 0) {
+          set(p, a)
+        }
+        if (ix == p.singleGroups.length && element.multiplicity.isUnderMax(ix)) {
           // insert the first available slot only
           GroupValue(p.singleGroups ++ Vector.fill(ix - p.singleGroups.length)(element.singleEmpty)).asRight
         } else
           //error beyond the first slot
           IndexError(s"Can't set at index $ix with multiplicity ${element.multiplicity}").asLeft
+      }
     }
 
-  def lensFor(groupElement: Group, path: Path): Either[DocumentError, GFLens] = {
+  def lensFor(groupElement: Group, path: Path, op: GroupLensOperation = Editing): Either[DocumentError, GFLens] = {
     case class Acc(templateElement: TemplateElement, lens: Either[DocumentError, GFLens])
 
     val acc: (TemplateElement, Either[DocumentError, Option[GLens]]) =
@@ -133,9 +173,9 @@ trait DocumentLenses {
         // if error, shortcut
         case (acc @ (_, Left(_)), _) => acc
         // Firs element, group
-        case ((ge @ Group(l, fs, m), Right(otLens)), indexed) =>
+        case ((ge: Group, Right(otLens)), indexed) =>
           logger.debug(s"Enter lens calculation iteration at element: ${ge.label}, path: $indexed")
-          nameIndexLens(ge, indexed.name, indexed.index) match {
+          nameIndexLens(ge, indexed.name, indexed.index, op) match {
             case Right((te: TemplateElement, glens: GLens)) =>
               logger.debug(s"outcome: Group, nextTemplate: ${te.label} lens: ${glens}")
               otLens match {
@@ -159,16 +199,17 @@ trait DocumentLenses {
             }
           case None => GFLens(glens, None).asRight
         }
-      case (fe @ Field(l, m), _) => InternalError("Field: unexpected").asLeft
+      case (_: Field, _) => InternalError("Field: unexpected").asLeft
     }
   }
 
   def fieldLensFor(groupElement: Group, path: Path): Either[DocumentError, DocumentLens[SingleGroupValue, FieldValue]] =
-    lensFor(groupElement, path).flatMap(_.asFieldLens)
+    lensFor(groupElement, path, Editing).flatMap(_.asFieldLens)
 
   def groupLensFor(
     groupElement: Group,
-    path: Path): Either[DocumentError, DocumentLens[SingleGroupValue, SingleGroupValue]] =
-    lensFor(groupElement, path).flatMap(_.asGroupLens)
+    path: Path,
+    op: GroupLensOperation = Editing): Either[DocumentError, DocumentLens[SingleGroupValue, SingleGroupValue]] =
+    lensFor(groupElement, path, op).flatMap(_.asGroupLens)
 }
 object DocumentLenses extends DocumentLenses
