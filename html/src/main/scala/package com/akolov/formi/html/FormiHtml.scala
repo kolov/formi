@@ -23,15 +23,17 @@ object Printer {
   val Default = new PlainPrinter(2)
 }
 
-class PlainPrinter(indent: Int) extends Printer {
+class PlainPrinter(indent: Int, prefix: String = "cu-") extends Printer {
   val newLine = if (indent == 0) "" else "\n"
 
   def spaces(n: Int): String = List.fill(n)(' ').mkString("")
 
   override def print(div: Div): String = print(div, 0)
 
-  def print(div: Div, dx: Int): String =
-    s"""${spaces(dx)}<div class="${div.classes.mkString(" ")}">${print(div.content, dx + indent)}</div>""".stripMargin
+  def print(div: Div, dx: Int): String = {
+    val classes = div.classes.map(c => s"$prefix$c").mkString(" ")
+    s"""${spaces(dx)}<div class="${classes}">${print(div.content, dx + indent)}</div>""".stripMargin
+  }
 
   def print(children: Children, dx: Int): String =
     children.children.map { c =>
@@ -53,21 +55,32 @@ object FormiHtml {
   }
 
   def renderSingleGroup(g: R.SingleGroupElement, ix: Int): Div = {
+    val groupInstanceLabelDiv = Div(List("group-instance-label"), TextContent(g.label))
     val children = g.entries.map {
       case g @ GroupElement(_, _) => renderGroup(g)
       case f @ FieldElement(_, _) => renderField(f)
     }
-    Div(List(s"group-element", s"group-index-$ix", s"group-name-${g.label}"), Children(children))
+    Div(
+      List(s"group-instance", s"group-index-$ix", s"group-name-${g.label}"),
+      Children(groupInstanceLabelDiv +: children))
   }
 
-  def renderGroup(g: R.GroupElement): Div =
-    Div(List(s"group", s"group-${g.label}"), Children(g.entries.zipWithIndex.map {
+  def renderGroup(g: R.GroupElement): Div = {
+    val groupLabelDiv = Div(List("group-label"), TextContent(g.label))
+    val grupInstances = g.entries.zipWithIndex.map {
       case (e, ix) => renderSingleGroup(e, ix)
-    }))
+    }
+
+    Div(
+      List(s"group", s"group-${g.label}"),
+      Children(groupLabelDiv +: grupInstances)
+    )
+  }
 
   def renderField(f: R.FieldElement) =
     Div(
-      List(s"field field-name-${f.label}"),
+      List(s"field", s"field-name-${f.label}"),
       Children(
-        List(Div(List("field-label"), TextContent(f.label)), Div(List("field-value"), TextContent(f.getContent)))))
+        List(Div(List("field-label"), TextContent(f.label)), Div(List("field-value"), TextContent(f.getContent))))
+    )
 }

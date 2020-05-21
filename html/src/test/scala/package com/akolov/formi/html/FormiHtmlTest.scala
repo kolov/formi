@@ -15,9 +15,9 @@ class FormiHtmlTest extends AnyFlatSpecLike with Matchers {
     val fieldElement = FieldElement("name", Some("George Costanza"))
     val rendered: Div = FormiHtml.renderField(fieldElement)
 
-    printer.print(rendered).stripAll shouldEqual """<div class="field field-name-name">
-                                          |  <div class="field-label">name</div>
-                                          |  <div class="field-value">George Costanza</div>
+    printer.print(rendered).stripAll shouldEqual """<div class="cu-field cu-field-name-name">
+                                          |  <div class="cu-field-label">name</div>
+                                          |  <div class="cu-field-value">George Costanza</div>
                                           |</div>""".stripAll
   }
 
@@ -30,45 +30,32 @@ class FormiHtmlTest extends AnyFlatSpecLike with Matchers {
           List(
             SingleGroupElement(
               "head",
-              List(FieldElement("firstName", Some("George")), FieldElement("lastName", Some("Costanza")))))),
-        GroupElement(
-          "head",
-          List(
-            SingleGroupElement(
-              "head",
-              List(FieldElement("firstName", Some("George")), FieldElement("lastName", Some("Costanza")))))
-        )
+              List(FieldElement("firstName", Some("George")), FieldElement("lastName", Some("Costanza"))))))
       )
     )
 
     val rendered: Div = FormiHtml.renderSingleGroup(sge, 0)
 
     println(printer.print(rendered))
-    printer.print(rendered).stripAll shouldEqual """<div class="group-element group-index-0 group-name-cv">
-                                          |  <div class="group group-head">
-                                          |    <div class="group-element group-index-0 group-name-head">
-                                          |      <div class="field field-name-firstName">
-                                          |        <div class="field-label">firstName</div>
-                                          |        <div class="field-value">George</div>
-                                          |      </div>
-                                          |      <div class="field field-name-lastName">
-                                          |        <div class="field-label">lastName</div>
-                                          |        <div class="field-value">Costanza</div>
-                                          |      </div>
-                                          |    </div>
-                                          |  </div>
-                                          |  <div class="group group-head">
-                                          |    <div class="group-element group-index-0 group-name-head">
-                                          |      <div class="field field-name-firstName">
-                                          |        <div class="field-label">firstName</div>
-                                          |        <div class="field-value">George</div>
-                                          |      </div>
-                                          |      <div class="field field-name-lastName">
-                                          |        <div class="field-label">lastName</div>
-                                          |        <div class="field-value">Costanza</div>
-                                          |      </div>
-                                          |    </div>
-                                          |  </div>
-                                          |</div>""".stripAll
+    printer
+      .print(rendered)
+      .stripAll shouldEqual """<div class="cu-group-instance cu-group-index-0 cu-group-name-cv">
+                                                   |  <div class="cu-group-instance-label">cv</div>
+                                                   |  <div class="cu-group cu-group-head">
+                                                   |    <div class="cu-group-label">head</div>
+                                                   |    <div class="cu-group-instance cu-group-index-0 cu-group-name-head">
+                                                   |      <div class="cu-group-instance-label">head</div>
+                                                   |      <div class="cu-field cu-field-name-firstName">
+                                                   |        <div class="cu-field-label">firstName</div>
+                                                   |        <div class="cu-field-value">George</div>
+                                                   |      </div>
+                                                   |      <div class="cu-field cu-field-name-lastName">
+                                                   |        <div class="cu-field-label">lastName</div>
+                                                   |        <div class="cu-field-value">Costanza</div>
+                                                   |      </div>
+                                                   |    </div>
+                                                   |  </div>
+                                                   |</div>
+                                                   |""".stripAll
   }
 }

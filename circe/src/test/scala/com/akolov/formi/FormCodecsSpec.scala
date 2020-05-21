@@ -20,7 +20,8 @@ class FormCodecsSpec extends AnyFlatSpecLike with Matchers with CvTestData with 
   }
 
   "entry form json encoder" should "print a entry form" in {
-    val json = EntryForm.renderSingleGroup(testTemplate.body, testTemplate.body.singleEmpty).right.get.asJson.printWith(printer)
+    val json =
+      EntryForm.renderSingleGroup(testTemplate.body, testTemplate.body.singleEmpty).right.get.asJson.printWith(printer)
     logger.info(json)
     json.length should be > 1
   }

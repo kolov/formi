@@ -46,6 +46,4 @@ trait FormCodecs {
   implicit lazy val GroupFormEntryDecoder: Decoder[GroupEntry] = deriveDecoder[GroupEntry]
   implicit lazy val FormEntryEncoder: Encoder[Entry] = deriveEncoder[Entry]
   implicit lazy val FormEntryDecoder: Decoder[Entry] = deriveDecoder[Entry]
-  implicit lazy val SingleGroupFormEntryEncoder: Encoder[SingleGroupFormEntry] = deriveEncoder[SingleGroupFormEntry]
-  implicit lazy val SingleGroupFormEntryDecoder: Decoder[SingleGroupFormEntry] = deriveDecoder[SingleGroupFormEntry]
 }
