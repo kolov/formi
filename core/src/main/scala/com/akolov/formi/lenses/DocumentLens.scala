@@ -63,7 +63,7 @@ trait DocumentLenses {
   def failingLens[P, A](e: DocumentError): DocumentLens[P, A] = new DocumentLens[P, A] {
     override def get(p: P): Either[DocumentError, A] = Left(e)
 
-    override def set(p: P, a: A): Either[DocumentError, P] = Left(e)
+    override def set(p: P, a: Option[A]): Either[DocumentError, P] = Left(e)
   }
 
   def nameLens(groupElement: Group, name: String): Either[DocumentError, (Element, FLens)] =
@@ -81,8 +81,11 @@ trait DocumentLenses {
             }
           }
 
-          override def set(p: SingleGroupValue, a: FieldValue): Either[DocumentError, SingleGroupValue] =
-            p.update(name, a)
+          override def set(p: SingleGroupValue, a: Option[FieldValue]): Either[DocumentError, SingleGroupValue] =
+            a match {
+              case Some(sa) => p.update(name, sa)
+              case None => BadValue("Attempt to assign None to FieldValue").asLeft
+            }
         }
         (fe, FLens(lens)).asRight
       case None =>
@@ -105,8 +108,11 @@ trait DocumentLenses {
             }
           }
 
-          override def set(p: SingleGroupValue, a: GroupValue): Either[DocumentError, SingleGroupValue] =
-            p.update(name, a)
+          override def set(p: SingleGroupValue, a: Option[GroupValue]): Either[DocumentError, SingleGroupValue] =
+            a match {
+              case Some(sa) => p.update(name, sa)
+              case None => BadValue("Attempt to assign None to FieldValue").asLeft
+            }
         }
         val composed = Lens.compose(lens, indexLens(ge, ix, op))
         (ge, GLens(composed)).asRight
@@ -124,13 +130,16 @@ trait DocumentLenses {
         else IndexError(s"Can't get at index $ix with multiplicity ${element.multiplicity}").asLeft
       }
 
-      override def set(p: GroupValue, a: SingleGroupValue): Either[DocumentError, GroupValue] = {
+      override def set(p: GroupValue, a: Option[SingleGroupValue]): Either[DocumentError, GroupValue] = {
         op match {
           case Editing =>
             if (ix < p.singleGroups.length) {
               val before = p.singleGroups.take(ix).toVector
               val after = p.singleGroups.drop(ix + 1).toVector
-              GroupValue((before :+ a) ++ after).asRight
+              a match {
+                case Some(sa) => GroupValue((before :+ sa) ++ after).asRight
+                case None => BadValue("Attemt to Edit None").asLeft
+              }
             } else
               IndexError(s"Can't set at index $ix: ${p.singleGroups.length} elements").asLeft
 
@@ -138,7 +147,7 @@ trait DocumentLenses {
             if (ix <= p.singleGroups.length) {
               val before = p.singleGroups.take(ix).toVector
               val after = p.singleGroups.drop(ix + 1).toVector
-              GroupValue((before :+ a) ++ after).asRight
+              GroupValue((before :+ a.getOrElse(element.singleEmpty)) ++ after).asRight
             } else
               IndexError(s"Can't insert at index $ix: ${p.singleGroups.length} elements").asLeft
 
@@ -150,18 +159,6 @@ trait DocumentLenses {
             } else
               IndexError(s"Can't insert at index $ix: ${p.singleGroups.length} elements").asLeft
         }
-      }
-
-      def insert(p: GroupValue, depth: Int, a: SingleGroupValue): Either[DocumentError, GroupValue] = {
-        if (depth > 0) {
-          set(p, a)
-        }
-        if (ix == p.singleGroups.length && element.multiplicity.isUnderMax(ix)) {
-          // insert the first available slot only
-          GroupValue(p.singleGroups ++ Vector.fill(ix - p.singleGroups.length)(element.singleEmpty)).asRight
-        } else
-          //error beyond the first slot
-          IndexError(s"Can't set at index $ix with multiplicity ${element.multiplicity}").asLeft
       }
     }
 

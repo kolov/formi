@@ -12,11 +12,12 @@ import org.log4s.getLogger
 trait Lens[P, E, A] { self =>
   def get(p: P): Either[E, A]
 
-  def set(p: P, a: A): Either[E, P]
+  def set(p: P, a: Option[A]): Either[E, P]
+  def set(p: P, a: A): Either[E, P] = set(p, Some(a))
 
   def modify(p: P)(f: A => A): Either[E, P] = {
     get(p).flatMap { curr =>
-      set(p, f(curr))
+      set(p, Some(f(curr)))
     }
   }
 
@@ -42,13 +43,13 @@ object Lens {
         _ = logger.debug(s"Got ${r} from ${a}")
       } yield r
 
-    override def set(p: P, b: B): Either[E, P] =
+    override def set(p: P, b: Option[B]): Either[E, P] =
       for {
         a <- lp.get(p)
         _ = logger.debug(s"Got ${a} from ${p}")
         na <- la.set(a, b)
         _ = logger.debug(s"Set ${b} in $a, got ${na}")
-        np <- lp.set(p, na)
+        np <- lp.set(p, Some(na))
         _ = logger.debug(s"Set ${na} in $p, got ${np}")
       } yield np
   }
