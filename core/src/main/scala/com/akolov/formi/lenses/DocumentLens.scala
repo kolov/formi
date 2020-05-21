@@ -2,7 +2,6 @@ package com.akolov.formi.lenses
 
 import cats.implicits._
 import com.akolov.formi._
-import com.akolov.formi.lenses._
 import com.akolov.formi.errors._
 import org.log4s.getLogger
 

@@ -16,7 +16,7 @@ trait Lens[P, E, A] { self =>
 
   def modify(p: P)(f: A => A): Either[E, P] = {
     get(p).flatMap { curr =>
-      set(p, curr)
+      set(p, f(curr))
     }
   }
 
