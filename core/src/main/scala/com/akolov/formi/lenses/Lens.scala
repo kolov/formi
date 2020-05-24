@@ -4,14 +4,14 @@ package lenses
 
 import org.log4s.getLogger
 
-/*
-Every lens operation may succeed or fail
- */
+/**
+  Lens for formi documents with schema
+  Creating a lens may succeed or fail
+  Every lens operation may succeed or fail
+  */
 trait Lens[P, E, A] { self =>
   def get(p: P): Either[E, A]
-  /*
-  Update existing element, empty or not, or insert a new element if schema allows
-   */
+
   def set(p: P, a: A): Either[E, P]
 
   def modify(p: P)(f: A => A): Either[E, P] = {
@@ -35,20 +35,14 @@ object Lens {
     override def get(p: P): Either[E, B] =
       for {
         a <- lp.get(p)
-        _ = logger.debug(s"Got ${a} from ${p}")
         r <- la.get(a)
-        _ = logger.debug(s"Got ${r} from ${a}")
       } yield r
 
-    override def set(p: P, b: B): Either[E, P] = {
+    override def set(p: P, b: B): Either[E, P] =
       for {
         a <- lp.get(p)
-        _ = logger.debug(s"Got ${a} from ${p}")
         na <- la.set(a, b)
-        _ = logger.debug(s"Set ${b} in $a, got ${na}")
         np <- lp.set(p, na)
-        _ = logger.debug(s"Set ${na} in $p, got ${np}")
       } yield np
-    }
   }
 }

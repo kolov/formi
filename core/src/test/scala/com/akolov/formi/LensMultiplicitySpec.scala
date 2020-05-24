@@ -2,12 +2,13 @@ package com.akolov.formi
 
 import cats.implicits._
 import com.akolov.formi.data.CvTestData
-import com.akolov.formi.errors.DocumentError
+import com.akolov.formi.errors._
 import com.akolov.formi.lenses._
 import org.log4s.getLogger
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
 import com.akolov.formi.lenses.DocumentLenses._
+import SingleGroupValueOps._
 
 class LensMultiplicitySpec extends AnyFlatSpecLike with Matchers with CvTestData {
   val logger = getLogger
@@ -16,9 +17,9 @@ class LensMultiplicitySpec extends AnyFlatSpecLike with Matchers with CvTestData
     val innerGroup = Group("inner", List.empty, Multiplicity.Optional)
     val outerGroup = Group("outer", List(innerGroup), Multiplicity.Optional)
     val outerGroupGroupValue: SingleGroupValue = outerGroup.singleEmpty
-    val eitherLens: Either[DocumentError, DocumentLenses.DocumentLens[SingleGroupValue, SingleGroupValue]] =
-      groupLensFor(outerGroup, Path(List(Indexed("inner", 0)), None))
-    eitherLens.isRight shouldEqual true
+    val eitherLens: Either[DocumentError, DocumentLens[SingleGroupValue, SingleGroupValue]] =
+      singleGroupLensFor(outerGroup, Path(List(Indexed("inner", 0)), None))
+    eitherLens.map(_ => ()) shouldEqual Right(())
     eitherLens.right.get.get(outerGroupGroupValue) shouldEqual innerGroup.singleEmpty.asRight
   }
 
@@ -26,43 +27,70 @@ class LensMultiplicitySpec extends AnyFlatSpecLike with Matchers with CvTestData
     val innerGroup = Group("inner", List.empty, Multiplicity.Once)
     val outerGroup = Group("outer", List(innerGroup), Multiplicity.Optional)
     val outerGroupGroupValue: SingleGroupValue = outerGroup.singleEmpty
-    val eitherLens: Either[DocumentError, DocumentLenses.DocumentLens[SingleGroupValue, SingleGroupValue]] =
-      groupLensFor(outerGroup, Path(List(Indexed("inner", 0)), None))
+    val eitherLens: Either[DocumentError, DocumentLens[SingleGroupValue, SingleGroupValue]] =
+      singleGroupLensFor(outerGroup, Path(List(Indexed("inner", 0)), None))
     eitherLens.isRight shouldEqual true
     eitherLens.right.get.get(outerGroupGroupValue) shouldEqual innerGroup.singleEmpty.asRight
   }
   "lens" should "get empty value 1 from empty group 2 to 2" in {
-    val innerGroup = Group("inner", List.empty, Multiplicity(2, 2))
-    val outerGroup = Group("outer", List(innerGroup), Multiplicity.Once)
-    val outerGroupGroupValue: SingleGroupValue = outerGroup.singleEmpty
-    val eitherLens: Either[DocumentError, DocumentLenses.DocumentLens[SingleGroupValue, SingleGroupValue]] =
-      groupLensFor(outerGroup, Path(List(Indexed("inner", 1)), None))
-    eitherLens.isRight shouldEqual true
-    eitherLens.right.get.get(outerGroupGroupValue) shouldEqual innerGroup.singleEmpty.asRight
-  }
-
-  "lens" should "insert at index 2 in field 2 to many" in { // FIXME
     val innerGroup = Group("inner", List.empty, Multiplicity(2))
     val outerGroup = Group("outer", List(innerGroup), Multiplicity.Once)
     val outerGroupGroupValue: SingleGroupValue = outerGroup.singleEmpty
-    val eitherLens: Either[DocumentError, DocumentLenses.DocumentLens[SingleGroupValue, SingleGroupValue]] =
-      groupLensFor(outerGroup, Path(List(Indexed("inner", 1)), None))
-    eitherLens.isRight shouldEqual true
-    eitherLens.right.get.get(outerGroupGroupValue) shouldEqual innerGroup.singleEmpty.asRight
+    val v = for {
+      path <- Path.parsePath("inner[1]")
+      lens <- singleGroupLensFor(outerGroup, path)
+      v <- lens.get(outerGroupGroupValue)
+    } yield v
+    v shouldEqual innerGroup.singleEmpty.asRight
   }
-//  "fieldLens" should "insert at index 2 in field 2 to many" in {
-//    val field: Field =
-//      Field(label = "element2toMany", desc = Text(), multiplicity = Multiplicity(2))
-//    val emptyFieldValue = field.emptyField
-//    fieldIndexLens(field, 0).get(emptyFieldValue) shouldEqual FieldValue.Empty.asRight
-//    fieldIndexLens(field, 0).set(emptyFieldValue, FieldValue("0")).isRight shouldEqual true
-//    fieldIndexLens(field, 1).get(emptyFieldValue) shouldEqual FieldValue.Empty.asRight
-//    fieldIndexLens(field, 1).set(emptyFieldValue, FieldValue("1")).isRight shouldEqual true
-//
-//    fieldIndexLens(field, 2).get(emptyFieldValue).isLeft shouldEqual true
-//    fieldIndexLens(field, 2).set(emptyFieldValue, FieldValue("2")).isRight shouldEqual true
-//
-//    fieldIndexLens(field, 3).get(emptyFieldValue).isLeft shouldEqual true
-//    fieldIndexLens(field, 3).set(emptyFieldValue, FieldValue("2")).isLeft shouldEqual true
-//  }
+
+  "lens" should "fail getting from index 2 in field 2 to many" in {
+    val innerGroup = Group("inner", List.empty, Multiplicity(2))
+    val outerGroup = Group("outer", List(innerGroup), Multiplicity.Once)
+    val outerGroupGroupValue: SingleGroupValue = outerGroup.singleEmpty
+    val v = for {
+      path <- Path.parsePath("inner[2]")
+      lens <- singleGroupLensFor(outerGroup, path)
+      v <- lens.get(outerGroupGroupValue)
+    } yield v
+    v.isLeft shouldEqual true
+  }
+
+  "lens" should "insert at index 2 in field 2 to many" in {
+    val innerGroup = Group("inner", List.empty, Multiplicity(2))
+    val outerGroup = Group("outer", List(innerGroup), Multiplicity.Once)
+    val outerGroupGroupValue: SingleGroupValue = outerGroup.singleEmpty
+    val v = for {
+      path <- Path.parsePath("inner[2]")
+      lensInsert <- singleGroupLensFor(outerGroup, path)
+      updated <- lensInsert.set(outerGroupGroupValue, innerGroup.singleEmpty)
+      lensEdit <- singleGroupLensFor(outerGroup, path)
+      v <- lensEdit.get(updated)
+    } yield v
+    v shouldEqual innerGroup.singleEmpty.asRight
+  }
+
+  "lens" should "insert new link in the Test CV template" in {
+    val outerGroup = testTemplate.body
+    val root: SingleGroupValue = outerGroup.singleEmpty
+
+    root.getGroupAt(outerGroup, "Links[0]/Link[1]").isLeft shouldBe true
+
+    val link1Updated = for {
+      rootUpdated <- root.insertAt(outerGroup, "Links[0]/Link", 0)
+      _ = println(s"after insert Links[0]/Link[0]: ${EntryForm.renderSingleGroup(outerGroup, rootUpdated)}")
+      link1Updated <- rootUpdated.getGroupAt(outerGroup, "Links[0]/Link[1]")
+    } yield link1Updated
+
+    link1Updated shouldEqual linkGroupElement.singleEmpty.asRight
+
+// Links[0] still has 1 link
+    val links0Updated = for {
+      rootUpdated <- root.insertAt(outerGroup, "Links[0]/Link", 0)
+      links0Updated <- rootUpdated.getGroupAt(outerGroup, "Links[0]")
+    } yield links0Updated
+
+    links0Updated.right.get.getElement("Link").right.get shouldEqual GroupValue(
+      Seq(linkGroupElement.singleEmpty, linkGroupElement.singleEmpty))
+  }
 }

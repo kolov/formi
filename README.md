@@ -1,10 +1,10 @@
 # Formi
 
-Document schema and manipulation with functional lenses
+Document schema-based manipulation with functional lenses
 
 # Usage
 
-Create a template, use it to create an empty document from it:
+Froma a template, an empty document can be created:
 
 ```scala
 
@@ -44,11 +44,13 @@ val document = template.empty
 The document content can be access through lenses. Because of the dynamic document structure, lens creation may fail.
 
 ```scala
+import com.akolov.formi.lenses._
 import com.akolov.formi.lenses.DocumentLenses._
-
+import com.akolov.formi.SingleGroupValueOps._
 
 for {
-  fieldLens <- fieldLensFor(template.body,Path(  "Head", 0, "name"))
+  path <- Path.parsePath("Head[0]/name")
+  fieldLens <- fieldLensFor(template.body, path)
   name <- fieldLens.get(document)
 } yield name
 // res0: Either[errors.DocumentError, FieldValue] = Right(FieldValue(None))
@@ -58,7 +60,8 @@ Any field can be set and queried:
 
 ```scala
 for {
-  fieldLens <- fieldLensFor(template.body, Path(  "Head", 0, "name"))
+  path <- Path.parsePath("Head[0]/name")
+  fieldLens <- fieldLensFor(template.body, path)
   updated <- fieldLens.set(document, FieldValue("George Costanza"))
   name <- fieldLens.get(updated)
 } yield name
@@ -67,22 +70,52 @@ for {
 // )
 ```
 
-Setting and reading may fail because of the schema multiplicity:
+Groups instances can be added or removed, if the group multiplicity allows. This 
+will insert a new Link group at position 0
 
 ```scala
-for {
-  fieldLens <- fieldLensFor(template.body,Path(  "Head", 0, "name"))
-  name <- fieldLens.get(document)
-} yield name
-// res2: Either[errors.DocumentError, FieldValue] = Right(FieldValue(None))
+document.insertAt(template.body, "Links[0]/Link", 0)
+// res2: Either[errors.DocumentError, SingleGroupValue] = Right(
+//   SingleGroupValue(
+//     Map(
+//       "Head" -> GroupValue(
+//         Vector(
+//           SingleGroupValue(
+//             Map("name" -> FieldValue(None), "title" -> FieldValue(None))
+//           )
+//         )
+//       ),
+//       "Links" -> GroupValue(
+//         Vector(
+//           SingleGroupValue(
+//             Map(
+//               "Link" -> GroupValue(
+//                 Vector(
+//                   SingleGroupValue(
+//                     Map(
+//                       "linkName" -> FieldValue(None),
+//                       "linkValue" -> FieldValue(None)
+//                     )
+//                   ),
+//                   SingleGroupValue(
+//                     Map(
+//                       "linkName" -> FieldValue(None),
+//                       "linkValue" -> FieldValue(None)
+//                     )
+//                   )
+//                 )
+//               )
+//             )
+//           )
+//         )
+//       )
+//     )
+//   )
+// )
 ```
 ## Developer's notes
 
-To debug gpg errors: 
-
-    export GPG_TTY=$(tty)
-   
-    sbt publishSigned
+    sbt '+ publishSigned'
     sbt sonatypeReleaseAll
 
     sbt  docs/mdoc // project-docs/target/mdoc/README.md
