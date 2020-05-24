@@ -4,7 +4,12 @@ Document schema-based manipulation with functional lenses
 
 # Usage
 
-Froma a template, an empty document can be created:
+Add the dependency
+
+     "com.akolov" %% "formi-circe" %"0.2.1"
+
+A template describes the structure of a document.
+From a template, an empty document can be created:
 
 ```scala mdoc:silent
 
@@ -79,7 +84,7 @@ document.insertAt(template.body, "Links[0]/Link", 0)
 ```
 ## Developer's notes
 
-    sbt '+ publishSigned'
+    sbt publishSigned
     sbt sonatypeReleaseAll
 
     sbt  docs/mdoc // project-docs/target/mdoc/README.md

@@ -5,6 +5,8 @@ val scala213 = "2.13.1"
 ThisBuild / pomIncludeRepository := { _ =>
   false
 }
+ThisBuild / publishConfiguration      := publishConfiguration.value.withOverwrite(true)
+ThisBuild / publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
 ThisBuild / publishTo := {
   val nexus = "https://oss.sonatype.org/"
   if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
@@ -16,6 +18,16 @@ ThisBuild / scmInfo := Some(
   ScmInfo(
     url("https://github.com/kolov/formi"),
     "scm:git@github.com:kolov/formi.git"
+  )
+)
+ThisBuild / homepage := Some(url("https://github.com/kolov/formi"))
+
+ThisBuild / developers := List(
+  Developer(
+    id = "kolov",
+    name = "Assen Kolov",
+    email = "assen.kolov@gmail.com",
+    url = url("https://github.com/kolov")
   )
 )
 
@@ -92,7 +104,6 @@ lazy val docs = project
   .enablePlugins(MdocPlugin)
   .settings(
     basicSettings ++ Seq(
-      crossScalaVersions := Nil,
       publish / skip     := true
     ),
     mdocOut := new java.io.File(".")
