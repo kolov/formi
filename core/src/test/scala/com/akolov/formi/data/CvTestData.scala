@@ -20,6 +20,22 @@ trait CvTestData {
       Field(label = "email", desc = Text(Some(25)))
     ))
 
+  val linkGroupElement: Group = Group(
+    "Link",
+    fields = List(
+      Field(label = "linkName", desc = Text(Some(12))),
+      Field(label = "linkValue", desc = Text(Some(25)))
+    ),
+    multiplicity = Multiplicity.AtLeastOnce
+  )
+
+  private val linksGroupElement: Group = Group(
+    "Links",
+    fields = List(
+      linkGroupElement
+    )
+  )
+
   val testTemplate = Template(
     name = "Simple CV",
     body = Group(
@@ -27,19 +43,7 @@ trait CvTestData {
       List(
         headGroupElement,
         infoGroupElement,
-        Group(
-          "Links",
-          fields = List(
-            Group(
-              "Link",
-              fields = List(
-                Field(label = "linkName", desc = Text(Some(12))),
-                Field(label = "linkValue", desc = Text(Some(25)))
-              ),
-              multiplicity = Multiplicity.AtLeastOnce
-            )
-          )
-        )
+        linksGroupElement
       )
     )
   )

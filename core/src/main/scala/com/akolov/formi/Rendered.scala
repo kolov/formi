@@ -24,9 +24,9 @@ object Rendered {
   }
   def renderField(field: Field, fieldValue: FieldValue) = FieldElement(field.label, fieldValue.value).asRight
 
-  def renderSingleGroup(group: Group, values: SingleGroupValue): Either[DocumentError, SingleGroupElement] = {
+  def renderSingleGroup(group: Group, singleGroupValue: SingleGroupValue): Either[DocumentError, SingleGroupElement] = {
     val entries: Either[DocumentError, List[Element]] = group.fields.map { te =>
-      values.values.get(te.label).map(Right(_)).getOrElse(Left(PathError("No such name"))).flatMap { vals =>
+      singleGroupValue.values.get(te.label).map(Right(_)).getOrElse(Left(PathError("No such name"))).flatMap { vals =>
         render(te, vals)
       }
     }.sequence

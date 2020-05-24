@@ -3,6 +3,8 @@ package com.akolov.formi
 import java.time.LocalDate
 
 case class Multiplicity(minOccurs: Int, maxOccurs: Option[Int] = None) {
+  def allows(n: Int): Boolean = n >= minOccurs && maxOccurs.map(_ > n).getOrElse(true)
+
   def isUnderMax(n: Int): Boolean = maxOccurs.map(n < _).getOrElse(true)
 }
 

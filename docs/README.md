@@ -1,10 +1,10 @@
 # Formi
 
-Document schema and manipulation with functional lenses
+Document schema-based manipulation with functional lenses
 
 # Usage
 
-Create a template, use it to create an empty document from it:
+Froma a template, an empty document can be created:
 
 ```scala mdoc:silent
 
@@ -43,12 +43,14 @@ val document = template.empty
  
 The document content can be access through lenses. Because of the dynamic document structure, lens creation may fail.
 
-```scala mdoc
+```scala mdoc 
+import com.akolov.formi.lenses._
 import com.akolov.formi.lenses.DocumentLenses._
-
+import com.akolov.formi.SingleGroupValueOps._
 
 for {
-  fieldLens <- fieldLensFor(template.body,Path(  "Head", 0, "name"))
+  path <- Path.parsePath("Head[0]/name")
+  fieldLens <- fieldLensFor(template.body, path)
   name <- fieldLens.get(document)
 } yield name
 
@@ -59,20 +61,21 @@ Any field can be set and queried:
 ```scala mdoc
 
 for {
-  fieldLens <- fieldLensFor(template.body, Path(  "Head", 0, "name"))
+  path <- Path.parsePath("Head[0]/name")
+  fieldLens <- fieldLensFor(template.body, path)
   updated <- fieldLens.set(document, FieldValue("George Costanza"))
   name <- fieldLens.get(updated)
 } yield name
 
 ```
 
-Setting and reading may fail because of the schema multiplicity:
+Groups instances can be added or removed, if the group multiplicity allows. This 
+will insert a new Link group at position 0
 
 ```scala mdoc
-for {
-  fieldLens <- fieldLensFor(template.body,Path(  "Head", 0, "name"))
-  name <- fieldLens.get(document)
-} yield name
+
+document.insertAt(template.body, "Links[0]/Link", 0)
+ 
 ```
 ## Developer's notes
 
