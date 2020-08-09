@@ -23,7 +23,7 @@ package object syntax {
     }
   }
 
-  implicit class SingleGroupOps(sg: SingleGroupValue) {
+  implicit class SingleGroupOps(sgv: SingleGroupValue) {
 
     def updateField(pathString: String, group: Group, fv: FieldValue): Either[DocumentError, SingleGroupValue] =
       for {
@@ -34,7 +34,7 @@ package object syntax {
     def updateField(path: Path, group: Group, fv: FieldValue): Either[DocumentError, SingleGroupValue] =
       for {
         lens <- fieldLensFor(group, path)
-        r <- lens.set(sg, fv)
+        r <- lens.set(sgv, fv)
       } yield r
 
     def getField(pathString: String, group: Group): Either[DocumentError, FieldValue] =
@@ -43,10 +43,52 @@ package object syntax {
         r <- getField(path, group)
       } yield r
 
+    def getGroup(pathString: String, group: Group): Either[DocumentError, SingleGroupValue] =
+      for {
+        path <- Path.parsePath(pathString)
+        lens <- singleGroupLensFor(group, path)
+        r <- lens.get(sgv)
+      } yield r
+
     def getField(path: Path, group: Group): Either[DocumentError, FieldValue] =
       for {
         lens <- fieldLensFor(group, path)
-        r <- lens.get(sg)
+        r <- lens.get(sgv)
       } yield r
+
+    def insertAt(group: Group, pathString: String, at: Int): Either[DocumentError, SingleGroupValue] =
+      Path.parsePath(pathString).flatMap(path => insertAt(group, path, at))
+
+    def insertAt(group: Group, path: Path, at: Int): Either[DocumentError, SingleGroupValue] =
+      for {
+        lens <- groupLensFor(group, path)
+        currentGroup <- lens.get(sgv)
+        subGroup <- group.getSubGroup(path)
+
+        updated = {
+          val before = currentGroup.singleGroups.take(at)
+          val after = currentGroup.singleGroups.drop(at)
+
+          (before :+ subGroup.singleEmpty) ++ after
+        }
+        updated <- lens.set(sgv, GroupValue(updated))
+      } yield updated
+
+    def deleteAt(group: Group, pathString: String, at: Int): Either[DocumentError, SingleGroupValue] =
+      Path.parsePath(pathString).flatMap(path => deleteAt(group, path, at))
+
+    def deleteAt(group: Group, path: Path, at: Int): Either[DocumentError, SingleGroupValue] =
+      for {
+        lens <- groupLensFor(group, path)
+        currentGroup <- lens.get(sgv)
+        subGroup <- group.getSubGroup(path)
+
+        updated = {
+          val before = currentGroup.singleGroups.take(at)
+          val after = currentGroup.singleGroups.drop(at + 1)
+          before ++ after
+        }
+        updated <- lens.set(sgv, GroupValue(updated))
+      } yield updated
   }
 }

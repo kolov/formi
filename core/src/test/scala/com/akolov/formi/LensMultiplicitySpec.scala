@@ -8,8 +8,7 @@ import org.log4s.getLogger
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
 import com.akolov.formi.lenses.DocumentLenses._
-import SingleGroupValueOps._
-import com.akolov.formi.lenses.syntax.SingleGroupOps
+import com.akolov.formi.lenses.syntax._
 
 class LensMultiplicitySpec extends AnyFlatSpecLike with Matchers with CvTestData {
   val logger = getLogger
@@ -86,12 +85,12 @@ class LensMultiplicitySpec extends AnyFlatSpecLike with Matchers with CvTestData
     val root: SingleGroupValue = outerGroup.singleEmpty
 
     // make sure there is no Links[0]/Link[1]
-    root.getGroupAt(outerGroup, "Links[0]/Link[1]").isLeft shouldBe true
+    root.getGroup("Links[0]/Link[1]", outerGroup).isLeft shouldBe true
 
     val link1Updated = for {
       v1 <- root.updateField("Links[0]/Link[0]/linkName", outerGroup, FieldValue("XXX"))
       rootUpdated <- v1.insertAt(outerGroup, "Links[0]/Link", 1)
-      link1Updated <- rootUpdated.getGroupAt(outerGroup, "Links[0]/Link[1]")
+      link1Updated <- rootUpdated.getGroup("Links[0]/Link[1]", outerGroup)
     } yield link1Updated
 
     link1Updated shouldEqual linkGroupElement.singleEmpty.asRight
@@ -99,7 +98,7 @@ class LensMultiplicitySpec extends AnyFlatSpecLike with Matchers with CvTestData
 // Links[0] still has 1 link
     val links0Updated = for {
       rootUpdated <- root.insertAt(outerGroup, "Links[0]/Link", 0)
-      links0Updated <- rootUpdated.getGroupAt(outerGroup, "Links[0]")
+      links0Updated <- rootUpdated.getGroup("Links[0]", outerGroup)
     } yield links0Updated
 
     links0Updated.right.get.getElement("Link").right.get shouldEqual GroupValue(
