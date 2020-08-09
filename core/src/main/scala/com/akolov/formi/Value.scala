@@ -62,6 +62,23 @@ trait SingleGroupValueOps {
         updated <- lens.set(sgv, GroupValue(updated))
       } yield updated
 
+    def deleteAt(group: Group, pathString: String, at: Int): Either[DocumentError, SingleGroupValue] =
+      Path.parsePath(pathString).flatMap(path => deleteAt(group, path, at))
+
+    def deleteAt(group: Group, path: Path, at: Int): Either[DocumentError, SingleGroupValue] =
+      for {
+        lens <- groupLensFor(group, path)
+        currentGroup <- lens.get(sgv)
+        subGroup <- group.getSubGroup(path)
+
+        updated = {
+          val before = currentGroup.singleGroups.take(at)
+          val after = currentGroup.singleGroups.drop(at + 1)
+          before ++ after
+        }
+        updated <- lens.set(sgv, GroupValue(updated))
+      } yield updated
+
     def getGroupAt(group: Group, pathString: String): Either[DocumentError, SingleGroupValue] =
       for {
         path <- Path.parsePath(pathString)
