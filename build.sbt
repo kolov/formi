@@ -2,6 +2,10 @@ import Dependencies._
 
 val scala213 = "2.13.1"
 
+val Versions = new {
+  val circe = "0.13.0"
+}
+
 ThisBuild / pomIncludeRepository := { _ =>
   false
 }
@@ -54,8 +58,8 @@ val basicSettings = Seq(
 )
 
 val circeLib: Seq[ModuleID] = {
-  def circe(name: String, version: String = "0.12.3") =
-    "io.circe" %% s"circe-$name" % version
+  def circe(name: String) =
+    "io.circe" %% s"circe-$name" % Versions.circe
 
   Seq(
     circe("core"),
@@ -104,7 +108,7 @@ lazy val docs = project
   .enablePlugins(MdocPlugin)
   .settings(
     basicSettings ++ Seq(
-      publish / skip     := true
+      publish / skip := true
     ),
     mdocOut := new java.io.File(".")
   )

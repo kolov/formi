@@ -56,18 +56,34 @@ class LensMultiplicitySpec extends AnyFlatSpecLike with Matchers with CvTestData
     v.isLeft shouldEqual true
   }
 
-  "lens" should "insert at index 2 in field 2 to many" in {
-    val innerGroup = Group("inner", List.empty, Multiplicity(2))
+  "lens" should "insert at index 2 in field 'at least 2''" in {
+    val innerGroup = Group("inner", List(Field("text", Text())), Multiplicity.atLeast(2))
     val outerGroup = Group("outer", List(innerGroup), Multiplicity.Once)
     val outerGroupGroupValue: SingleGroupValue = outerGroup.singleEmpty
-    val v = for {
-      path <- Path.parsePath("inner[2]")
-      lensInsert <- singleGroupLensFor(outerGroup, path)
-      updated <- lensInsert.set(outerGroupGroupValue, innerGroup.singleEmpty)
-      lensEdit <- singleGroupLensFor(outerGroup, path)
-      v <- lensEdit.get(updated)
-    } yield v
-    v shouldEqual innerGroup.singleEmpty.asRight
+    (for {
+      pathField0 <- Path.parsePath("inner[0]/text")
+      pathField1 <- Path.parsePath("inner[1]/text")
+      pathField2 <- Path.parsePath("inner[2]/text")
+      pathGroup2 <- Path.parsePath("inner[2]")
+      fieldLens0 <- fieldLensFor(outerGroup, pathField0)
+      fieldLens1 <- fieldLensFor(outerGroup, pathField1)
+      fieldLens2 <- fieldLensFor(outerGroup, pathField2)
+      groupLens2 <- singleGroupLensFor(outerGroup, pathGroup2)
+      v1 <- fieldLens0.set(outerGroupGroupValue, FieldValue("0"))
+      v2 <- fieldLens1.set(v1, FieldValue("1"))
+      updated <- groupLens2.set(v2, innerGroup.singleEmpty)
+      group2Value <- groupLens2.get(updated)
+      field0Value <- fieldLens0.get(updated)
+      field1Value <- fieldLens1.get(updated)
+      field2Value <- fieldLens2.get(updated)
+    } yield (group2Value, field0Value, field1Value, field2Value)) match {
+      case Right((group2Value, field0Value, field1Value, field2Value)) =>
+        group2Value shouldEqual innerGroup.singleEmpty
+        field0Value shouldEqual FieldValue("0")
+        field1Value shouldEqual FieldValue("1")
+        field2Value shouldEqual FieldValue.Empty
+      case Left(e) => fail(e.toString)
+    }
   }
 
   "lens" should "insert new link in the Test CV template" in {

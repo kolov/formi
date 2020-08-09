@@ -1,6 +1,6 @@
 package com.akolov.formi.html
 
-import com.akolov.formi.Rendered.{FieldElement, GroupElement, SingleGroupElement}
+import com.akolov.formi.{FieldView, GroupView, SingleGroupView}
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
 
@@ -12,7 +12,7 @@ class FormiHtmlTest extends AnyFlatSpecLike with Matchers {
   }
 
   "renderer" should "render text field" in {
-    val fieldElement = FieldElement("name", Some("George Costanza"))
+    val fieldElement = FieldView("name", Some("George Costanza"))
     val rendered: Div = FormiHtml.renderField(fieldElement)
 
     printer.print(rendered).stripAll shouldEqual """<div class="cu-field cu-field-name-name">
@@ -22,15 +22,15 @@ class FormiHtmlTest extends AnyFlatSpecLike with Matchers {
   }
 
   "renderer" should "render Group" in {
-    val sge = SingleGroupElement(
+    val sge = SingleGroupView(
       "cv",
       List(
-        GroupElement(
+        GroupView(
           "head",
           List(
-            SingleGroupElement(
+            SingleGroupView(
               "head",
-              List(FieldElement("firstName", Some("George")), FieldElement("lastName", Some("Costanza"))))))
+              List(FieldView("firstName", Some("George")), FieldView("lastName", Some("Costanza"))))))
       )
     )
 
