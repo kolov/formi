@@ -164,13 +164,10 @@ trait DocumentLenses {
         case (acc @ (_, Left(_)), _) => acc
         // First element, group
         case ((group: Group, Right(gfLens)), indexed) =>
-          logger.debug(s"Enter lens construction iteration at element: ${group.label}, path: $indexed")
           nameIndexLens(group, indexed.name, indexed.index) match {
             case Right((group, glens)) =>
-              logger.debug(s"outcome: Group, nextTemplate: ${group.label} lens: ${glens}")
               (group, gfLens.append(glens))
             case Left(e) =>
-              logger.debug(s"Left Outcome: $e")
               (group, Left(e))
           }
       }
@@ -193,6 +190,11 @@ trait DocumentLenses {
     }
   }
 
+  def fieldLensFor(
+    groupElement: Group,
+    pathString: String): Either[DocumentError, DocumentLens[SingleGroupValue, FieldValue]] =
+    Path.parsePath(pathString).flatMap(path => fieldLensFor(groupElement, path))
+
   def fieldLensFor(groupElement: Group, path: Path): Either[DocumentError, DocumentLens[SingleGroupValue, FieldValue]] =
     lensFor(groupElement, path).flatMap(_.asFieldLens)
 
@@ -200,6 +202,11 @@ trait DocumentLenses {
     groupElement: Group,
     path: Path): Either[DocumentError, DocumentLens[SingleGroupValue, SingleGroupValue]] =
     lensFor(groupElement, path).flatMap(_.asSingleGroupLens)
+
+  def singleGroupLensFor(
+    groupElement: Group,
+    pathString: String): Either[DocumentError, DocumentLens[SingleGroupValue, SingleGroupValue]] =
+    Path.parsePath(pathString).flatMap(path => singleGroupLensFor(groupElement, path))
 
   def groupLensFor(groupElement: Group, path: Path): Either[DocumentError, DocumentLens[SingleGroupValue, GroupValue]] =
     lensFor(groupElement, path).flatMap(_.asGroupLens)

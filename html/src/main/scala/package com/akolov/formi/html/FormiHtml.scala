@@ -1,8 +1,7 @@
 package com.akolov.formi.html
 
-import com.akolov.formi.Rendered.{FieldElement, GroupElement}
 import com.akolov.formi.html.Div.{Children, Content, TextContent}
-import com.akolov.formi.{Rendered => R}
+import com.akolov.formi.{FieldView, GroupView, SingleGroupView, Rendered => R}
 
 object Div {
   sealed trait Content
@@ -50,22 +49,22 @@ class PlainPrinter(indent: Int, prefix: String = "cu-") extends Printer {
 
 object FormiHtml {
 
-  implicit class FieldOps(f: R.FieldElement) {
+  implicit class FieldOps(f: FieldView) {
     def getContent: String = f.value.getOrElse("")
   }
 
-  def renderSingleGroup(g: R.SingleGroupElement, ix: Int): Div = {
+  def renderSingleGroup(g: SingleGroupView, ix: Int): Div = {
     val groupInstanceLabelDiv = Div(List("group-instance-label"), TextContent(g.label))
     val children = g.entries.map {
-      case g @ GroupElement(_, _) => renderGroup(g)
-      case f @ FieldElement(_, _) => renderField(f)
+      case g @ GroupView(_, _) => renderGroup(g)
+      case f @ FieldView(_, _) => renderField(f)
     }
     Div(
       List(s"group-instance", s"group-index-$ix", s"group-name-${g.label}"),
       Children(groupInstanceLabelDiv +: children))
   }
 
-  def renderGroup(g: R.GroupElement): Div = {
+  def renderGroup(g: GroupView): Div = {
     val groupLabelDiv = Div(List("group-label"), TextContent(g.label))
     val grupInstances = g.entries.zipWithIndex.map {
       case (e, ix) => renderSingleGroup(e, ix)
@@ -77,7 +76,7 @@ object FormiHtml {
     )
   }
 
-  def renderField(f: R.FieldElement) =
+  def renderField(f: FieldView) =
     Div(
       List(s"field", s"field-name-${f.label}"),
       Children(

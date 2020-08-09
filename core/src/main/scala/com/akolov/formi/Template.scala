@@ -11,6 +11,7 @@ case class Multiplicity(minOccurs: Int, maxOccurs: Option[Int] = None) {
 object Multiplicity {
   val Once = Multiplicity(1, Some(1))
   val AtLeastOnce = Multiplicity(1, None)
+  def atLeast(n: Int) = Multiplicity(n, None)
   val Optional = Multiplicity(0, Some(1))
   def apply(minOccurs: Int, maxOccurs: Int) = new Multiplicity(minOccurs, Some(maxOccurs))
 }
