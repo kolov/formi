@@ -4,6 +4,8 @@ import com.akolov.formi.errors._
 import cats.implicits._
 import com.akolov.formi.lenses.Path
 import com.akolov.formi.lenses.DocumentLenses._
+import com.akolov.formi.lenses.syntax._
+
 sealed trait Value
 case class GroupValue(singleGroups: Seq[SingleGroupValue]) extends Value
 
@@ -18,11 +20,11 @@ case class SingleGroupValue(values: Map[String, Value]) {
     }
   }
 
-  def update(name: String, newValue: Value): Either[DocumentError, SingleGroupValue] = {
-    (newValue, values.get(name)) match {
-      case (_, None) => PathError(s"Update failed: no such field $name").asLeft
-      case (GroupValue(_), Some(GroupValue(_))) => SingleGroupValue(values.updated(name, newValue)).asRight
-      case (FieldValue(_), Some(FieldValue(_))) => SingleGroupValue(values.updated(name, newValue)).asRight
+  def update(fieldName: String, newValue: Value): Either[DocumentError, SingleGroupValue] = {
+    (newValue, values.get(fieldName)) match {
+      case (_, None) => PathError(s"Update failed: no such field $fieldName").asLeft
+      case (GroupValue(_), Some(GroupValue(_))) => SingleGroupValue(values.updated(fieldName, newValue)).asRight
+      case (FieldValue(_), Some(FieldValue(_))) => SingleGroupValue(values.updated(fieldName, newValue)).asRight
       case (_, _) => BadValue().asLeft
     }
   }
@@ -43,26 +45,19 @@ trait SingleGroupValueOps {
   implicit class Operations(sgv: SingleGroupValue) {
 
     def insertAt(group: Group, pathString: String, at: Int): Either[DocumentError, SingleGroupValue] =
-      for {
-        path <- Path.parsePath(pathString)
-        lens <- groupLensFor(group, path)
-        currentGroup <- lens.get(sgv)
-        updated = {
-          val before = currentGroup.singleGroups.take(at)
-          val after = currentGroup.singleGroups.drop(at)
-          (before :+ currentGroup.singleGroups.head) ++ after
-        }
-        updated <- lens.set(sgv, GroupValue(updated))
-      } yield updated
+      Path.parsePath(pathString).flatMap(path => insertAt(group, path, at))
 
     def insertAt(group: Group, path: Path, at: Int): Either[DocumentError, SingleGroupValue] =
       for {
         lens <- groupLensFor(group, path)
         currentGroup <- lens.get(sgv)
+        subGroup <- group.getSubGroup(path)
+
         updated = {
           val before = currentGroup.singleGroups.take(at)
           val after = currentGroup.singleGroups.drop(at)
-          (before :+ currentGroup.singleGroups.head) ++ after
+
+          (before :+ subGroup.singleEmpty) ++ after
         }
         updated <- lens.set(sgv, GroupValue(updated))
       } yield updated

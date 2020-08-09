@@ -9,6 +9,7 @@ import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
 import com.akolov.formi.lenses.DocumentLenses._
 import SingleGroupValueOps._
+import com.akolov.formi.lenses.syntax.SingleGroupOps
 
 class LensMultiplicitySpec extends AnyFlatSpecLike with Matchers with CvTestData {
   val logger = getLogger
@@ -56,26 +57,20 @@ class LensMultiplicitySpec extends AnyFlatSpecLike with Matchers with CvTestData
     v.isLeft shouldEqual true
   }
 
-  "lens" should "insert at index 2 in field 'at least 2''" in {
+  "lens" should "insert an empty group at index 2 when 'at least 2''" in {
     val innerGroup = Group("inner", List(Field("text", Text())), Multiplicity.atLeast(2))
     val outerGroup = Group("outer", List(innerGroup), Multiplicity.Once)
-    val outerGroupGroupValue: SingleGroupValue = outerGroup.singleEmpty
+    val sgv: SingleGroupValue = outerGroup.singleEmpty
     (for {
-      pathField0 <- Path.parsePath("inner[0]/text")
-      pathField1 <- Path.parsePath("inner[1]/text")
-      pathField2 <- Path.parsePath("inner[2]/text")
-      pathGroup2 <- Path.parsePath("inner[2]")
-      fieldLens0 <- fieldLensFor(outerGroup, pathField0)
-      fieldLens1 <- fieldLensFor(outerGroup, pathField1)
-      fieldLens2 <- fieldLensFor(outerGroup, pathField2)
-      groupLens2 <- singleGroupLensFor(outerGroup, pathGroup2)
-      v1 <- fieldLens0.set(outerGroupGroupValue, FieldValue("0"))
-      v2 <- fieldLens1.set(v1, FieldValue("1"))
-      updated <- groupLens2.set(v2, innerGroup.singleEmpty)
-      group2Value <- groupLens2.get(updated)
-      field0Value <- fieldLens0.get(updated)
-      field1Value <- fieldLens1.get(updated)
-      field2Value <- fieldLens2.get(updated)
+      groupLens2 <- singleGroupLensFor(outerGroup, "inner[2]")
+      v1 <- sgv.updateField("inner[0]/text", outerGroup, FieldValue("0"))
+      v2 <- v1.updateField("inner[1]/text", outerGroup, FieldValue("1"))
+      v3 <- groupLens2.set(v2, innerGroup.singleEmpty)
+      _ <- v3.insertAt(outerGroup, "inner", 2)
+      group2Value <- groupLens2.get(v3)
+      field0Value <- v3.getField("inner[0]/text", outerGroup)
+      field1Value <- v3.getField("inner[1]/text", outerGroup)
+      field2Value <- v3.getField("inner[2]/text", outerGroup)
     } yield (group2Value, field0Value, field1Value, field2Value)) match {
       case Right((group2Value, field0Value, field1Value, field2Value)) =>
         group2Value shouldEqual innerGroup.singleEmpty
@@ -86,15 +81,16 @@ class LensMultiplicitySpec extends AnyFlatSpecLike with Matchers with CvTestData
     }
   }
 
-  "lens" should "insert new link in the Test CV template" in {
+  "lens" should "insert new empty link in the Test CV template" in {
     val outerGroup = testTemplate.body
     val root: SingleGroupValue = outerGroup.singleEmpty
 
+    // make sure there is no Links[0]/Link[1]
     root.getGroupAt(outerGroup, "Links[0]/Link[1]").isLeft shouldBe true
 
     val link1Updated = for {
-      rootUpdated <- root.insertAt(outerGroup, "Links[0]/Link", 0)
-      _ = println(s"after insert Links[0]/Link[0]: ${EntryForm.renderSingleGroup(outerGroup, rootUpdated)}")
+      v1 <- root.updateField("Links[0]/Link[0]/linkName", outerGroup, FieldValue("XXX"))
+      rootUpdated <- v1.insertAt(outerGroup, "Links[0]/Link", 1)
       link1Updated <- rootUpdated.getGroupAt(outerGroup, "Links[0]/Link[1]")
     } yield link1Updated
 
