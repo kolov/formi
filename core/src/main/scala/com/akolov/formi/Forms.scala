@@ -35,11 +35,12 @@ object EntryForm {
     (templateElement, elementValue) match {
       case (field: Field, fieldValue: FieldValue) => renderField(path, field, fieldValue).run(prov).asRight
       case (group: Group, GroupValue(singleGroupValues)) =>
-        singleGroupValues.zipWithIndex.map {
-          case (sgv, ix) => {
-            val x: Either[DocumentError, List[Entry]] =
-              renderSingleGroup(path.appendGroup(group.label), group, ix, sgv).run(prov)
-            x
+        singleGroupValues
+          .map(sgv => renderSingleGroup(group, sgv))
+          .toList
+          .sequence
+          .map { vals =>
+            GroupEntry(group.label, group.multiplicity.getOrElse(Multiplicity.Once), vals)
           }
         }.toList.sequence.map { vals =>
           val translated = prov.getLabel(path.appendGroup(group.label))
