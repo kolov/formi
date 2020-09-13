@@ -91,7 +91,7 @@ trait DocumentLenses {
             }
           }
           override def set(p: SingleGroupValue, groupValue: GroupValue): Either[DocumentError, SingleGroupValue] = {
-            if (ge.multiplicity.allows(groupValue.singleGroups.size))
+            if (ge.multiplicity.getOrElse(Multiplicity.asInstanceOf).allows(groupValue.singleGroups.size))
               SingleGroupValue(p.values + (name -> groupValue)).asRight
             else
               MultiplicityError().asLeft

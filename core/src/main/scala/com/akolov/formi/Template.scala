@@ -34,16 +34,22 @@ case class Field(override val label: String, desc: InputDesc) extends TemplateEl
   override def empty: Value = FieldValue.Empty
 }
 
-case class Group(
-  override val label: String,
-  fields: List[TemplateElement],
-  multiplicity: Multiplicity = Multiplicity.Once)
+case class Group(override val label: String, fields: List[TemplateElement], multiplicity: Option[Multiplicity])
     extends TemplateElement {
   self =>
 
   def singleEmpty: SingleGroupValue = SingleGroupValue(fields.map(te => (te.label, te.empty)).toMap)
 
   override def empty: GroupValue = {
-    GroupValue(Vector.fill(Math.max(multiplicity.minOccurs, 1))(self.singleEmpty))
+    GroupValue(Vector.fill(Math.max(multiplicity.getOrElse(Multiplicity.Once).minOccurs, 1))(self.singleEmpty))
   }
+}
+
+object Group {
+
+  def apply(label: String, fields: List[TemplateElement], multiplicity: Multiplicity): Group =
+    Group(label, fields, Some(multiplicity))
+
+  def apply(label: String, fields: List[TemplateElement]): Group =
+    Group(label, fields, Some(Multiplicity.Once))
 }

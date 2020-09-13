@@ -21,7 +21,7 @@ object EntryForm {
           .toList
           .sequence
           .map { vals =>
-            GroupEntry(group.label, group.multiplicity, vals)
+            GroupEntry(group.label, group.multiplicity.getOrElse(Multiplicity.Once), vals)
           }
       case _ => BadValue().asLeft
     }
