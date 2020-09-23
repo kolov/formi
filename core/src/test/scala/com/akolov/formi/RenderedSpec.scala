@@ -15,6 +15,7 @@ class RenderedSpec extends AnyFlatSpecLike with Matchers {
     val entry = Rendered.render(nameFieldElement, FieldValue("George"))
     entry shouldEqual FieldView("name", Some("George")).asRight
   }
+
   "group renderer" should "render error on wrong value " in {
     val firstName: Field = Field("firstName", Text())
     val secondName: Field = Field("secondName", Text())

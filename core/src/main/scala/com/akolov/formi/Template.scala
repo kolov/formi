@@ -49,9 +49,6 @@ case class Group(override val label: String, fields: List[TemplateElement], mult
 
 object Group {
 
-  def apply(label: String, fields: List[TemplateElement], multiplicity: Multiplicity): Group =
-    Group(label, fields, multiplicity)
-
   def apply(label: String, fields: List[TemplateElement]): Group =
     Group(label, fields, Multiplicity.Once)
 }
