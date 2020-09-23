@@ -40,7 +40,7 @@ object EntryForm {
           .toList
           .sequence
           .map { vals =>
-            GroupEntry(group.label, group.multiplicity.getOrElse(Multiplicity.Once), vals)
+            GroupEntry(group.label, group.multiplicity, vals)
           }
         }.toList.sequence.map { vals =>
           val translated = prov.getLabel(path.appendGroup(group.label))
