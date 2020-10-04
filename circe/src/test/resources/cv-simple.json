@@ -1,0 +1,74 @@
+{
+  "label": "cv",
+  "fields": [
+    {
+      "Group": {
+        "label": "Head",
+        "fields": [
+          {
+            "Field": {
+              "label": "name"
+            }
+          },
+          {
+            "Field": {
+              "label": "title"
+            }
+          },
+          {
+            "Field": {
+              "label": "address",
+              "desc": {
+                "MultilineText": {}
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Group": {
+        "label": "Info",
+        "fields": [
+          {
+            "Field": {
+              "label": "phone"
+            }
+          },
+          {
+            "Field": {
+              "label": "email"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "Group": {
+        "label": "Links",
+        "fields": [
+          {
+            "Group": {
+              "label": "Link",
+              "fields": [
+                {
+                  "Field": {
+                    "label": "linkName"
+                  }
+                },
+                {
+                  "Field": {
+                    "label": "linkValue"
+                  }
+                }
+              ],
+              "multiplicity": {
+                "minOccurs": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

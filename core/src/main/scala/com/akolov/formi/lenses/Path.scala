@@ -35,7 +35,8 @@ object Path {
         }
     }
 
-    val indexedPattern: Regex = """([a-zA-Z0-9_]*)\[(\d+)\]""".r
+    val indexedPattern: Regex = """([a-zA-Z0-9_-]*)\[(\d+)\]""".r
+    val namedPattern: Regex = """[a-zA-Z0-9_-]*""".r
 
     val pathSegments: Seq[Either[DocumentError, PathElement]] = path
       .split("/")
@@ -45,7 +46,8 @@ object Path {
         s match {
           case indexedPattern(p, i) =>
             i.toIntOption.fold(PathError(s"Not an int: $i").asLeft[Indexed])(in => Indexed(p, in).asRight)
-          case n => Named(n).asRight
+          case namedPattern => Named(s).asRight
+          case x => PathError(s"Invalid path element name: $x").asLeft[Indexed]
         }
       }
     pathSegments.toList.sequence.flatMap { els =>

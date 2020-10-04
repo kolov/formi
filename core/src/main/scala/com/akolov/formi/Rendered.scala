@@ -26,7 +26,8 @@ object Rendered {
 
   def renderSingleGroup(group: Group, singleGroupValue: SingleGroupValue): Either[DocumentError, SingleGroupView] = {
     val entries: Either[DocumentError, List[View]] = group.fields.map { te =>
-      singleGroupValue.values.get(te.label).map(Right(_)).getOrElse(Left(PathError("No such name"))).flatMap { vals =>
+      val optElement = singleGroupValue.values.get(te.label)
+      optElement.map(Right(_)).getOrElse(Left(PathError("No such name"))).flatMap { vals =>
         render(te, vals)
       }
     }.sequence

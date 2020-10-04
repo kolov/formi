@@ -18,6 +18,7 @@ object Multiplicity {
 
 sealed trait InputDesc
 case class Text(maxLength: Option[Int] = None, pattern: Option[String] = None) extends InputDesc
+case class MultilineText(lines: Option[Int] = None) extends InputDesc
 case class Date(notBefore: Option[LocalDate]) extends InputDesc
 
 sealed trait Element

@@ -38,4 +38,17 @@ class BasicLensSpec extends AnyFlatSpecLike with Matchers with CvTestData {
 
     newValue shouldEqual FieldValue("George Costanza").asRight
   }
+
+  it should "set values in developer cv" in {
+    val cvSingleGroupValue = cvGroupElement.singleEmpty
+
+    val newValue = for {
+      gfLens <- lensFor(cvGroupElement, Path(List(Indexed("Head")), Some(Named("name"))))
+      fl <- gfLens.asFieldLens
+      updated <- fl.set(cvSingleGroupValue, FieldValue("George Costanza"))
+      newValue <- fl.get(updated)
+    } yield newValue
+
+    newValue shouldEqual FieldValue("George Costanza").asRight
+  }
 }

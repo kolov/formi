@@ -2,17 +2,23 @@ package com.akolov.formi
 
 package compact
 
+import com.akolov.formi
+
 object CompactTemplate {
   import com.akolov.{formi => F}
 
   val defaultMultiplicity = Multiplicity.Once
   val defaultFieldDesc = Text()
 
-  trait CompactTemplateElement
+  sealed trait CompactTemplateElement
   case class Field(label: String, desc: Option[InputDesc]) extends CompactTemplateElement {}
 
   case class Group(label: String, fields: List[CompactTemplateElement], multiplicity: Option[Multiplicity])
-      extends CompactTemplateElement
+      extends CompactTemplateElement {
+
+    def expand: formi.Group =
+      F.Group(label, fields.map(CompactTemplate.expand), multiplicity.getOrElse(defaultMultiplicity))
+  }
 
   def shrink(e: F.TemplateElement): CompactTemplateElement = e match {
     case F.Group(label, fields, multiplicity) =>
