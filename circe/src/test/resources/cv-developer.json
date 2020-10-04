@@ -23,7 +23,7 @@
           {
             "Field": {
               "label": "address",
-              "input": {
+              "desc": {
                 "MultilineText": {}
               }
             }
@@ -34,7 +34,7 @@
     {
       "Field": {
         "label": "Introduction",
-        "input": {
+        "desc": {
           "MultilineText": {}
         }
       }
@@ -191,7 +191,7 @@
                 {
                   "Field": {
                     "label": "details",
-                    "input": {
+                    "desc": {
                       "MultilineText": {}
                     }
                   }

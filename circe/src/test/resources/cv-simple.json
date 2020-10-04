@@ -3,7 +3,7 @@
   "fields": [
     {
       "Group": {
-        "label": "head",
+        "label": "Head",
         "fields": [
           {
             "Field": {
@@ -18,7 +18,7 @@
           {
             "Field": {
               "label": "address",
-              "input": {
+              "desc": {
                 "MultilineText": {}
               }
             }
@@ -28,7 +28,7 @@
     },
     {
       "Group": {
-        "label": "info",
+        "label": "Info",
         "fields": [
           {
             "Field": {
@@ -45,11 +45,11 @@
     },
     {
       "Group": {
-        "label": "links",
+        "label": "Links",
         "fields": [
           {
             "Group": {
-              "label": "link",
+              "label": "Link",
               "fields": [
                 {
                   "Field": {
