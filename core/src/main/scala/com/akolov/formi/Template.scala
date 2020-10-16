@@ -35,7 +35,11 @@ case class Field(override val label: String, input: InputDesc, desc: Option[Stri
   override def empty: Value = FieldValue.Empty
 }
 
-case class Group(override val label: String, fields: List[TemplateElement], multiplicity: Multiplicity)
+case class Group(
+  override val label: String,
+  fields: List[TemplateElement],
+  multiplicity: Multiplicity,
+  desc: Option[String] = None)
     extends TemplateElement {
   self =>
 

@@ -8,15 +8,12 @@ import org.scalatest.matchers.should.Matchers
 class EntryFormSpec extends AnyFlatSpecLike with Matchers with CvTestData {
 
   val labelsProvider = new LabelsProvider {
-    override def findLabel(els: Seq[String]): Option[String] = Some(s"""{${els.mkString(".")}}""")
+    override def findLabel(els: Seq[String]): Option[String] = None
   }
 
   "Entry form renderer" should "render single group" in {
     val g: Seq[Entry] =
-      EntryForm
-        .renderEntryForm(labelsProvider, testTemplate.body, testTemplate.body.singleEmpty)
-        .right
-        .get
+      EntryForm.renderSingleGroup(testTemplate.body, testTemplate.body.singleEmpty, labelsProvider).right.get
 
     g shouldEqual
       List(

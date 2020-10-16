@@ -2,7 +2,7 @@ package com.akolov.formi.html
 
 import cats.data.Reader
 import com.akolov.formi.html.Div.{Children, Content, TextContent}
-import com.akolov.formi.lenses.{GroupInstancePath, GroupOrFieldPath, Path}
+import com.akolov.formi.lenses.{AnyPath, GroupInstancePath, Path}
 import com.akolov.formi.{FieldView, GroupView, LabelsProvider, SingleGroupView, Rendered => R}
 import cats.implicits._
 
@@ -59,30 +59,27 @@ object FormiHtml {
   type Labels = Map[String, String]
 
   def renderForm(sgv: SingleGroupView, labelsProvider: LabelsProvider): Div =
-    renderSingleGroup(GroupOrFieldPath(sgv.label), sgv, 0).run(labelsProvider)
+    renderSingleGroup(GroupInstancePath.empty, sgv, 0).run(labelsProvider)
 
-  private[html] def renderSingleGroup(
-    path: GroupOrFieldPath,
-    sgv: SingleGroupView,
-    ix: Int): Reader[LabelsProvider, Div] = {
+  def renderSingleGroup(path: GroupInstancePath, g: SingleGroupView, ix: Int): Reader[LabelsProvider, Div] = {
     for {
-      translatedLabel <- LabelsProvider.translate(path)
-      children <- sgv.entries.map {
-        case g @ GroupView(_, _) => renderGroup(path.at(ix), g)
-        case f @ FieldView(_, _) => renderField(path.at(ix), f)
+      label <- LabelsProvider.translate(path, g.label)
+      groupInstanceLabelDiv = Div(List("group-instance-label"), TextContent(label))
+      children <- g.entries.map {
+        case g @ GroupView(_, _) => renderGroup(path, g)
+        case f @ FieldView(_, _) => renderField(path, f)
       }.toList.sequence
     } yield Div(
-      List(s"group-instance", s"group-index-$ix", s"group-instance-${sgv.label}"),
-      Children(Div(List("group-instance-label"), TextContent(translatedLabel)) +: children)
-    )
+      List(s"group-instance", s"group-index-$ix", s"group-instance-${g.label}"),
+      Children(groupInstanceLabelDiv +: children))
   }
 
-  private[html] def renderGroup(path: GroupInstancePath, g: GroupView): Reader[LabelsProvider, Div] =
+  private def renderGroup(path: GroupInstancePath, g: GroupView): Reader[LabelsProvider, Div] =
     for {
-      tranlatedGroupLabel <- LabelsProvider.translate(path, g.label)
-      groupLabelDiv = Div(List("group-label"), TextContent(tranlatedGroupLabel))
+      translated <- LabelsProvider.translate(path, g.label)
+      groupLabelDiv = Div(List("group-label"), TextContent(translated))
       groupInstances <- g.entries.zipWithIndex.map {
-        case (e, ix) => renderSingleGroup(path.appendGroup(g.label), e, ix)
+        case (e, ix) => renderSingleGroup(path, e, ix)
       }.toList.sequence
     } yield Div(
       List(s"group", s"group-${g.label}"),

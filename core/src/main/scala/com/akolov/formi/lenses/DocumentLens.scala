@@ -155,7 +155,7 @@ trait DocumentLenses {
       }
     }
 
-  def lensFor(group: Group, path: Path): Either[DocumentError, GFLens] = {
+  def lensFor(group: Group, path: AnyPath): Either[DocumentError, GFLens] = {
     case class Acc(templateElement: TemplateElement, gfLens: Either[DocumentError, GFLens])
 
     def foldIndexedPathElements(els: Seq[Indexed]): (Group, Either[DocumentError, GFLens]) =
@@ -173,7 +173,7 @@ trait DocumentLenses {
       }
 
     path match {
-      case GroupOrFieldPath(indexed, Named(name)) =>
+      case AnyPath(indexed, Some(Named(name))) =>
         foldIndexedPathElements(indexed) match {
           case (_, Left(e)) => Left(e)
           case (group, Right(gflens)) =>
@@ -182,7 +182,7 @@ trait DocumentLenses {
                 gflens.append(flens)
             }
         }
-      case GroupInstancePath(indexed) =>
+      case AnyPath(indexed, None) =>
         foldIndexedPathElements(indexed) match {
           case (_, Left(e)) => Left(e)
           case (_, Right(gflens)) => gflens.asRight
@@ -193,22 +193,22 @@ trait DocumentLenses {
   def fieldLensFor(
     groupElement: Group,
     pathString: String): Either[DocumentError, DocumentLens[SingleGroupValue, FieldValue]] =
-    Path.parsePath(pathString).flatMap(path => fieldLensFor(groupElement, path))
+    AnyPath.parsePath(pathString).flatMap(path => fieldLensFor(groupElement, path))
 
-  def fieldLensFor(groupElement: Group, path: Path): Either[DocumentError, DocumentLens[SingleGroupValue, FieldValue]] =
+  def fieldLensFor(groupElement: Group, path: AnyPath): Either[DocumentError, DocumentLens[SingleGroupValue, FieldValue]] =
     lensFor(groupElement, path).flatMap(_.asFieldLens)
 
   def singleGroupLensFor(
     groupElement: Group,
-    path: Path): Either[DocumentError, DocumentLens[SingleGroupValue, SingleGroupValue]] =
+    path: AnyPath): Either[DocumentError, DocumentLens[SingleGroupValue, SingleGroupValue]] =
     lensFor(groupElement, path).flatMap(_.asSingleGroupLens)
 
   def singleGroupLensFor(
     groupElement: Group,
     pathString: String): Either[DocumentError, DocumentLens[SingleGroupValue, SingleGroupValue]] =
-    Path.parsePath(pathString).flatMap(path => singleGroupLensFor(groupElement, path))
+    AnyPath.parsePath(pathString).flatMap(path => singleGroupLensFor(groupElement, path))
 
-  def groupLensFor(groupElement: Group, path: Path): Either[DocumentError, DocumentLens[SingleGroupValue, GroupValue]] =
+  def groupLensFor(groupElement: Group, path: AnyPath): Either[DocumentError, DocumentLens[SingleGroupValue, GroupValue]] =
     lensFor(groupElement, path).flatMap(_.asGroupLens)
 }
 object DocumentLenses extends DocumentLenses
