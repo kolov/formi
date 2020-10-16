@@ -195,7 +195,9 @@ trait DocumentLenses {
     pathString: String): Either[DocumentError, DocumentLens[SingleGroupValue, FieldValue]] =
     AnyPath.parsePath(pathString).flatMap(path => fieldLensFor(groupElement, path))
 
-  def fieldLensFor(groupElement: Group, path: AnyPath): Either[DocumentError, DocumentLens[SingleGroupValue, FieldValue]] =
+  def fieldLensFor(
+    groupElement: Group,
+    path: AnyPath): Either[DocumentError, DocumentLens[SingleGroupValue, FieldValue]] =
     lensFor(groupElement, path).flatMap(_.asFieldLens)
 
   def singleGroupLensFor(
@@ -208,7 +210,9 @@ trait DocumentLenses {
     pathString: String): Either[DocumentError, DocumentLens[SingleGroupValue, SingleGroupValue]] =
     AnyPath.parsePath(pathString).flatMap(path => singleGroupLensFor(groupElement, path))
 
-  def groupLensFor(groupElement: Group, path: AnyPath): Either[DocumentError, DocumentLens[SingleGroupValue, GroupValue]] =
+  def groupLensFor(
+    groupElement: Group,
+    path: AnyPath): Either[DocumentError, DocumentLens[SingleGroupValue, GroupValue]] =
     lensFor(groupElement, path).flatMap(_.asGroupLens)
 }
 object DocumentLenses extends DocumentLenses

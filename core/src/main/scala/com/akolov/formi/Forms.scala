@@ -1,16 +1,26 @@
 package com.akolov.formi
 
+import cats.Id
+import cats.data.Reader
 import com.akolov.formi.errors._
 import cats.implicits._
-import com.akolov.formi.lenses.{GroupInstancePath, GroupOrFieldPath, Path}
+import com.akolov.formi.lenses.{GroupInstancePath, Path}
 import org.log4s.getLogger
 
 // Entry in a form
 sealed trait Entry
-case class FieldEntry(label: String, input: InputDesc, value: FieldValue, desc: Option[String] = None) extends Entry
+
+case class FieldEntry(
+  label: String,
+  translatedLabel: String,
+  input: InputDesc,
+  value: FieldValue,
+  desc: Option[String] = None)
+    extends Entry
 
 case class GroupEntry(
   label: String,
+  translatedLabel: String,
   multiplicity: Multiplicity,
   groupInstances: Seq[Seq[Entry]],
   desc: Option[String] = None)
@@ -20,20 +30,22 @@ object EntryForm {
   val logger = getLogger
 
   private def render(
-    prefix: Seq[String],
+    path: GroupInstancePath,
     templateElement: TemplateElement,
-    elementValue: Value,
-    labelsProvider: LabelsProvider): Either[DocumentError, Entry] =
+    elementValue: Value): Reader[LabelsProvider, Either[DocumentError, Entry]] = Reader { prov =>
     (templateElement, elementValue) match {
       case (field: Field, fieldValue: FieldValue) => renderField(path, field, fieldValue).run(prov).asRight
       case (group: Group, GroupValue(singleGroupValues)) =>
         singleGroupValues
-          .map(sgv => renderSingleGroup(group, sgv, labelsProvider))
+          .map(sgv => {
+            val x: Either[DocumentError, List[Entry]] = renderSingleGroup(path, group, sgv).run(prov)
+            x
+          })
           .toList
           .sequence
           .map { vals =>
-            val label = labelsProvider.getLabel(prefix, group.label)
-            GroupEntry(label, group.multiplicity, vals, group.desc)
+            val translated = prov.getLabel(path.appendGroup(group.label))
+            GroupEntry(group.label, translated, group.multiplicity, vals, group.desc)
           }
         }.toList.sequence.map { vals =>
           val translated = prov.getLabel(path.appendGroup(group.label))
@@ -43,13 +55,17 @@ object EntryForm {
     }
   }
 
-  private def renderField(field: Field, fieldValue: FieldValue) =
-    FieldEntry(field.label, field.input, fieldValue, field.desc).asRight
+  private def renderField(
+    path: GroupInstancePath,
+    field: Field,
+    fieldValue: FieldValue): Reader[LabelsProvider, FieldEntry] = Reader { prov =>
+    FieldEntry(field.label, prov.getLabel(path.appendField(field.label)), field.input, fieldValue, field.desc)
+  }
 
   def renderSingleGroup(
+    path: GroupInstancePath,
     group: Group,
-    singleGroupValue: SingleGroupValue,
-    labelsProvider: LabelsProvider): Either[DocumentError, List[Entry]] = {
+    singleGroupValue: SingleGroupValue): Reader[LabelsProvider, Either[DocumentError, List[Entry]]] = Reader { prov =>
     group.fields.map { templateElement =>
       val elementValue: Either[DocumentError, Value] =
         singleGroupValue.values
@@ -57,7 +73,7 @@ object EntryForm {
           .map(Right(_))
           .getOrElse(Left(BadValue(s"No value for label: ${templateElement.label}")))
       elementValue.flatMap { elementValue =>
-        val rendered = render(Seq.empty, templateElement, elementValue, labelsProvider)
+        val rendered = render(GroupInstancePath.empty, templateElement, elementValue).run(prov)
         logger.debug(s"""Rendered for ${templateElement.label}, ${elementValue}:
              $rendered""")
         rendered
