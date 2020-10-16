@@ -1,22 +1,27 @@
 package com.akolov.formi.html
 
-import com.akolov.formi.{FieldView, GroupView, SingleGroupView}
+import com.akolov.formi.lenses.GroupInstancePath
+import com.akolov.formi.{FieldView, GroupView, LabelsProvider, SingleGroupView}
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
 
 class FormiHtmlTest extends AnyFlatSpecLike with Matchers {
   val printer = Printer.Default
 
+  val labelsProvider = new LabelsProvider {
+    override def findLabel(els: Seq[String]): Option[String] = Some(s"""{${els.mkString(".")}}""")
+  }
+
   implicit class stringOp(s: String) {
-    def stripAll = s.replaceAll("[(\\s)*|\\|]", "")
+    def stripAll: String = s.replaceAll("[(\\s)*|\\|]", "")
   }
 
   "renderer" should "render text field" in {
     val fieldElement = FieldView("name", Some("George Costanza"))
-    val rendered: Div = FormiHtml.renderField(fieldElement)
+    val rendered: Div = FormiHtml.renderField(GroupInstancePath.empty, fieldElement).run(labelsProvider)
 
-    printer.print(rendered).stripAll shouldEqual """<div class="cu-field cu-field-name-name">
-                                          |  <div class="cu-field-label">name</div>
+    printer.print(rendered).stripAll shouldEqual """<div class="cu-field cu-field-name">
+                                          |  <div class="cu-field-label">{name}</div>
                                           |  <div class="cu-field-value">George Costanza</div>
                                           |</div>""".stripAll
   }
@@ -34,23 +39,23 @@ class FormiHtmlTest extends AnyFlatSpecLike with Matchers {
       )
     )
 
-    val rendered: Div = FormiHtml.renderSingleGroup(sge, 0)
+    val rendered: Div = FormiHtml.renderSingleGroup(GroupInstancePath.empty, sge, 0).run(labelsProvider)
 
     println(printer.print(rendered))
     printer
       .print(rendered)
-      .stripAll shouldEqual """<div class="cu-group-instance cu-group-index-0 cu-group-name-cv">
-                                                   |  <div class="cu-group-instance-label">cv</div>
+      .stripAll shouldEqual """<div class="cu-group-instance cu-group-index-0 cu-group-instance-cv">
+                                                   |  <div class="cu-group-instance-label">{cv}</div>
                                                    |  <div class="cu-group cu-group-head">
-                                                   |    <div class="cu-group-label">head</div>
-                                                   |    <div class="cu-group-instance cu-group-index-0 cu-group-name-head">
-                                                   |      <div class="cu-group-instance-label">head</div>
-                                                   |      <div class="cu-field cu-field-name-firstName">
-                                                   |        <div class="cu-field-label">firstName</div>
+                                                   |    <div class="cu-group-label">{head}</div>
+                                                   |    <div class="cu-group-instance cu-group-index-0 cu-group-instance-head">
+                                                   |      <div class="cu-group-instance-label">{head}</div>
+                                                   |      <div class="cu-field cu-field-firstName">
+                                                   |        <div class="cu-field-label">{firstName}</div>
                                                    |        <div class="cu-field-value">George</div>
                                                    |      </div>
-                                                   |      <div class="cu-field cu-field-name-lastName">
-                                                   |        <div class="cu-field-label">lastName</div>
+                                                   |      <div class="cu-field cu-field-lastName">
+                                                   |        <div class="cu-field-label">{lastName}</div>
                                                    |        <div class="cu-field-value">Costanza</div>
                                                    |      </div>
                                                    |    </div>
