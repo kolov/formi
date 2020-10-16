@@ -9,21 +9,21 @@ trait CvTestData {
   val titleFieldElement: Field = Field(label = "title", input = Text(Some(50)))
 
   val headGroupElement: Group = Group(
-    "Head",
+    "head",
     fields = List(
       nameFieldElement,
       titleFieldElement
     ))
 
   val infoGroupElement: Group = Group(
-    "Info",
+    "info",
     fields = List(
       Field(label = "phone", input = Text(Some(12))),
       Field(label = "email", input = Text(Some(25)))
     ))
 
   val linkGroupElement: Group = Group(
-    "Link",
+    "link",
     fields = List(
       Field(label = "linkName", input = Text(Some(12))),
       Field(label = "linkValue", input = Text(Some(25)))
@@ -32,7 +32,7 @@ trait CvTestData {
   )
 
   private val linksGroupElement: Group = Group(
-    "Links",
+    "links",
     fields = List(
       linkGroupElement
     )

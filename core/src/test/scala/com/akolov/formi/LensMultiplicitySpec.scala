@@ -85,23 +85,23 @@ class LensMultiplicitySpec extends AnyFlatSpecLike with Matchers with CvTestData
     val root: SingleGroupValue = outerGroup.singleEmpty
 
     // make sure there is no Links[0]/Link[1]
-    root.getGroup("Links[0]/Link[1]", outerGroup).isLeft shouldBe true
+    root.getGroup("links[0]/link[1]", outerGroup).isLeft shouldBe true
 
     val link1Updated = for {
-      v1 <- root.updateField("Links[0]/Link[0]/linkName", outerGroup, FieldValue("XXX"))
-      rootUpdated <- v1.insertAt(outerGroup, "Links[0]/Link", 1)
-      link1Updated <- rootUpdated.getGroup("Links[0]/Link[1]", outerGroup)
+      v1 <- root.updateField("links[0]/link[0]/linkName", outerGroup, FieldValue("XXX"))
+      rootUpdated <- v1.insertAt(outerGroup, "links[0]/link", 1)
+      link1Updated <- rootUpdated.getGroup("links[0]/link[1]", outerGroup)
     } yield link1Updated
 
     link1Updated shouldEqual linkGroupElement.singleEmpty.asRight
 
 // Links[0] still has 1 link
     val links0Updated = for {
-      rootUpdated <- root.insertAt(outerGroup, "Links[0]/Link", 0)
-      links0Updated <- rootUpdated.getGroup("Links[0]", outerGroup)
+      rootUpdated <- root.insertAt(outerGroup, "links[0]/link", 0)
+      links0Updated <- rootUpdated.getGroup("links[0]", outerGroup)
     } yield links0Updated
 
-    links0Updated.right.get.getElement("Link").right.get shouldEqual GroupValue(
+    links0Updated.right.get.getElement("link").right.get shouldEqual GroupValue(
       Seq(linkGroupElement.singleEmpty, linkGroupElement.singleEmpty))
   }
 }

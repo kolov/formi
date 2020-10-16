@@ -14,11 +14,12 @@ trait LabelsProvider {
   }
 }
 
-
 object LabelsProvider {
-  def translate(path: GroupInstancePath, label: String)  : Reader[LabelsProvider, String] = Reader[LabelsProvider, String] { prov =>
-    prov.getLabel(path.appendGroup(label))
-  }
+
+  def translate(path: GroupInstancePath, label: String): Reader[LabelsProvider, String] =
+    Reader[LabelsProvider, String] { prov =>
+      prov.getLabel(path.appendGroup(label))
+    }
 }
 
 object PropLabelProvider {

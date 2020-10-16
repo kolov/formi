@@ -142,11 +142,11 @@
     },
     {
       "Group" : {
-        "label" : "Links",
+        "label" : "links",
         "fields" : [
           {
             "Group" : {
-              "label" : "Link",
+              "label" : "link",
               "fields" : [
                 {
                   "Field" : {
