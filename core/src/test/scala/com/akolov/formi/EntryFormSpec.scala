@@ -14,8 +14,7 @@ class EntryFormSpec extends AnyFlatSpecLike with Matchers with CvTestData {
   "Entry form renderer" should "render single group" in {
     val g: Seq[Entry] =
       EntryForm
-        .renderSingleGroup(GroupInstancePath.empty, testTemplate.body, testTemplate.body.singleEmpty)
-        .run(labelsProvider)
+        .renderEntryForm(labelsProvider, testTemplate.body, testTemplate.body.singleEmpty)
         .right
         .get
 
@@ -23,36 +22,36 @@ class EntryFormSpec extends AnyFlatSpecLike with Matchers with CvTestData {
       List(
         GroupEntry(
           "head",
-          "{head}",
+          "{cv.head}",
           Multiplicity.Once,
           List(
             List(
-              FieldEntry("name", "{name}", Text(Some(50), None), FieldValue(None)),
-              FieldEntry("title", "{title}", Text(Some(50), None), FieldValue(None))))
+              FieldEntry("name", "{cv.head.name}", Text(Some(50), None), FieldValue(None)),
+              FieldEntry("title", "{cv.head.title}", Text(Some(50), None), FieldValue(None))))
         ),
         GroupEntry(
           "info",
-          "{info}",
+          "{cv.info}",
           Multiplicity.Once,
           List(
             List(
-              FieldEntry("phone", "{phone}", Text(Some(12), None), FieldValue(None)),
-              FieldEntry("name", "{name}", Text(Some(25), None), FieldValue(None))))
+              FieldEntry("phone", "{cv.info.phone}", Text(Some(12), None), FieldValue(None)),
+              FieldEntry("email", "{cv.info.email}", Text(Some(25), None), FieldValue(None))))
         ),
         GroupEntry(
           "links",
-          "{links}",
+          "{cv.links}",
           Multiplicity.Once,
           List(
             List(
               GroupEntry(
                 "link",
-                "{link}",
+                "{cv.links.link}",
                 Multiplicity.AtLeastOnce,
-                List(
-                  List(
-                    FieldEntry("linkName", "{linkName}", Text(Some(12), None), FieldValue(None)),
-                    FieldEntry("linkValue", "{linkValue}", Text(Some(25), None), FieldValue(None))))
+                List(List(
+                  FieldEntry("linkName", "{cv.links.link.linkName}", Text(Some(12), None), FieldValue(None)),
+                  FieldEntry("linkValue", "{cv.links.link.linkValue}", Text(Some(25), None), FieldValue(None))
+                ))
               ))
           )
         )

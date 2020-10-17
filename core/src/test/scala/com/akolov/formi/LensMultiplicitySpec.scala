@@ -18,7 +18,7 @@ class LensMultiplicitySpec extends AnyFlatSpecLike with Matchers with CvTestData
     val outerGroup = Group("outer", List(innerGroup), Multiplicity.Optional)
     val outerGroupGroupValue: SingleGroupValue = outerGroup.singleEmpty
     val eitherLens: Either[DocumentError, DocumentLens[SingleGroupValue, SingleGroupValue]] =
-      singleGroupLensFor(outerGroup, AnyPath(List(Indexed("inner", 0)), None))
+      singleGroupLensFor(outerGroup, Path(List(Indexed("inner", 0)), None))
     eitherLens.map(_ => ()) shouldEqual Right(())
     eitherLens.right.get.get(outerGroupGroupValue) shouldEqual innerGroup.singleEmpty.asRight
   }
@@ -28,7 +28,7 @@ class LensMultiplicitySpec extends AnyFlatSpecLike with Matchers with CvTestData
     val outerGroup = Group("outer", List(innerGroup), Multiplicity.Optional)
     val outerGroupGroupValue: SingleGroupValue = outerGroup.singleEmpty
     val eitherLens: Either[DocumentError, DocumentLens[SingleGroupValue, SingleGroupValue]] =
-      singleGroupLensFor(outerGroup, AnyPath(List(Indexed("inner", 0)), None))
+      singleGroupLensFor(outerGroup, Path(List(Indexed("inner", 0)), None))
     eitherLens.isRight shouldEqual true
     eitherLens.right.get.get(outerGroupGroupValue) shouldEqual innerGroup.singleEmpty.asRight
   }
@@ -37,7 +37,7 @@ class LensMultiplicitySpec extends AnyFlatSpecLike with Matchers with CvTestData
     val outerGroup = Group("outer", List(innerGroup), Multiplicity.Once)
     val outerGroupGroupValue: SingleGroupValue = outerGroup.singleEmpty
     val v = for {
-      path <- AnyPath.parsePath("inner[1]")
+      path <- Path.parsePath("inner[1]")
       lens <- singleGroupLensFor(outerGroup, path)
       v <- lens.get(outerGroupGroupValue)
     } yield v
@@ -49,7 +49,7 @@ class LensMultiplicitySpec extends AnyFlatSpecLike with Matchers with CvTestData
     val outerGroup = Group("outer", List(innerGroup), Multiplicity.Once)
     val outerGroupGroupValue: SingleGroupValue = outerGroup.singleEmpty
     val v = for {
-      path <- AnyPath.parsePath("inner[2]")
+      path <- Path.parsePath("inner[2]")
       lens <- singleGroupLensFor(outerGroup, path)
       v <- lens.get(outerGroupGroupValue)
     } yield v
