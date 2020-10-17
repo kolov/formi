@@ -2,9 +2,6 @@ package com.akolov.formi
 
 import com.akolov.formi.errors._
 import cats.implicits._
-import com.akolov.formi.lenses.Path
-import com.akolov.formi.lenses.DocumentLenses._
-import com.akolov.formi.lenses.syntax._
 
 sealed trait Value
 case class GroupValue(singleGroups: Seq[SingleGroupValue]) extends Value

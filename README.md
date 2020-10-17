@@ -23,8 +23,8 @@ val template = Template(
       Group(
         "Head",
         fields = List(
-          Field(label = "name", desc = Text(maxLength = Some(50), pattern = None)),
-           Field(label = "title", desc = Text(Some(50)))
+          Field(label = "name", input =Text(maxLength = Some(50), pattern = None)),
+           Field(label = "title", input =Text(Some(50)))
         )), 
       Group(
         "Links",
@@ -32,8 +32,8 @@ val template = Template(
           Group(
               "Link",
               fields = List(
-                Field(label = "linkName", desc = Text(Some(12))),
-                Field(label = "linkValue", desc = Text(Some(25)))
+                Field(label = "linkName", input =Text(Some(12))),
+                Field(label = "linkValue", input =Text(Some(25)))
               ),
               multiplicity = Multiplicity.AtLeastOnce
             )

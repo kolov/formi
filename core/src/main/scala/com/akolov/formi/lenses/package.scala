@@ -10,12 +10,12 @@ package object syntax {
   implicit class GroupOps(group: Group) {
 
     def getSubGroup(path: Path): Either[DocumentError, Group] = {
-      val els: Seq[String] = path.groups.map(_.name) ++ path.named.map(_.name).toList
+      val els: Seq[String] = path.asStrings
       els
         .foldLeft[Option[Group]](Some(group)) {
           case (Some(g), name) =>
             g.fields.find(_.label == name) match {
-              case Some(ng @ Group(_, _, _)) => Some(ng)
+              case Some(ng @ Group(_, _, _, _)) => Some(ng)
               case _ => None
             }
         }

@@ -81,7 +81,7 @@ trait DocumentLenses {
 
   def nameLens(group: Group, name: String): Either[DocumentError, (TemplateElement, FinalLens)] =
     group.fields.find(_.label === name) match {
-      case Some(ge @ Group(_, _, _)) =>
+      case Some(ge @ Group(_, _, _, _)) =>
         val lens = new DocumentLens[SingleGroupValue, GroupValue] {
           override def get(p: SingleGroupValue): Either[DocumentError, GroupValue] = {
             p.getElement(name) match {
@@ -99,7 +99,7 @@ trait DocumentLenses {
         }
         (group, GLens(lens)).asRight
 
-      case Some(fe @ Field(_, _)) =>
+      case Some(fe @ Field(_, _, _)) =>
         val lens = new DocumentLens[SingleGroupValue, FieldValue] {
           override def get(p: SingleGroupValue): Either[DocumentError, FieldValue] = {
             p.getElement(name) match {
@@ -119,7 +119,7 @@ trait DocumentLenses {
 
   def nameIndexLens(groupElement: Group, name: String, ix: Int): Either[DocumentError, (Group, SGLens)] =
     groupElement.fields.find(_.label === name) match {
-      case Some(ge @ Group(_, _, _)) =>
+      case Some(ge @ Group(_, _, _, _)) =>
         val lens = new DocumentLens[SingleGroupValue, GroupValue] {
           override def get(p: SingleGroupValue): Either[DocumentError, GroupValue] = {
             p.getElement(name) match {
@@ -134,7 +134,7 @@ trait DocumentLenses {
         }
         val composed = Lens.compose(lens, indexLens(ge, ix))
         (ge, SGLens(composed)).asRight
-      case Some(_ @Field(_, _)) =>
+      case Some(_ @Field(_, _, _)) =>
         IndexError(s"""Field $name can't have index""").asLeft
       case None =>
         IndexError(s"""No such name: $name. Available: [${groupElement.fields.map(_.label).mkString(",")}]""").asLeft
@@ -173,7 +173,7 @@ trait DocumentLenses {
       }
 
     path match {
-      case Path(indexed, Some(Named(name))) =>
+      case GroupOrFieldPath(indexed, Named(name)) =>
         foldIndexedPathElements(indexed) match {
           case (_, Left(e)) => Left(e)
           case (group, Right(gflens)) =>
@@ -182,7 +182,7 @@ trait DocumentLenses {
                 gflens.append(flens)
             }
         }
-      case Path(indexed, None) =>
+      case GroupInstancePath(indexed) =>
         foldIndexedPathElements(indexed) match {
           case (_, Left(e)) => Left(e)
           case (_, Right(gflens)) => gflens.asRight

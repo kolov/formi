@@ -18,6 +18,7 @@ object Multiplicity {
 
 sealed trait InputDesc
 case class Text(maxLength: Option[Int] = None, pattern: Option[String] = None) extends InputDesc
+case class MultilineText(lines: Option[Int] = None) extends InputDesc
 case class Date(notBefore: Option[LocalDate]) extends InputDesc
 
 sealed trait Element
@@ -30,20 +31,29 @@ sealed trait TemplateElement extends Element {
   def empty: Value
 }
 
-case class Field(override val label: String, desc: InputDesc) extends TemplateElement {
+case class Field(override val label: String, input: InputDesc, desc: Option[String] = None) extends TemplateElement {
   override def empty: Value = FieldValue.Empty
 }
 
 case class Group(
   override val label: String,
   fields: List[TemplateElement],
-  multiplicity: Multiplicity = Multiplicity.Once)
+  multiplicity: Multiplicity,
+  desc: Option[String] = None)
     extends TemplateElement {
   self =>
+
+  val defaultMultiplicity = Multiplicity.Once
 
   def singleEmpty: SingleGroupValue = SingleGroupValue(fields.map(te => (te.label, te.empty)).toMap)
 
   override def empty: GroupValue = {
     GroupValue(Vector.fill(Math.max(multiplicity.minOccurs, 1))(self.singleEmpty))
   }
+}
+
+object Group {
+
+  def apply(label: String, fields: List[TemplateElement]): Group =
+    Group(label, fields, Multiplicity.Once)
 }
