@@ -25,15 +25,15 @@ trait CvTestData {
   val testTemplate = Template(
     name = "Simple CV",
     body = Group(
-      "Simple CV",
+      "cv",
       List(
         headGroupElement,
         infoGroupElement,
         Group(
-          "Links",
+          "links",
           fields = List(
             Group(
-              "Link",
+              "link",
               fields = List(
                 Field(label = "linkName", input = Text(Some(12))),
                 Field(label = "linkValue", input = Text(Some(25)))

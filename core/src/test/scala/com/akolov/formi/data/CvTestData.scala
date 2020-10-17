@@ -41,7 +41,7 @@ trait CvTestData {
   val testTemplate = Template(
     name = "Simple CV",
     body = Group(
-      "Simple CV",
+      "cv",
       List(
         headGroupElement,
         infoGroupElement,

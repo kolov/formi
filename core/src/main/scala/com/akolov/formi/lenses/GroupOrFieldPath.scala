@@ -9,41 +9,21 @@ case class Indexed(name: String, index: Int = 0) extends PathElement
 case class Named(name: String) extends PathElement
 
 sealed trait Path {
-  def asString: Seq[String]
+  def asStrings: Seq[String]
 }
 
-case class GroupInstancePath(groups: Seq[Indexed]) extends Path {
-  def appendField(label: String): Path = new AnyPath(groups, Some(Named(label)))
-
-  def appendGroup(label: String): Path = new AnyPath(groups, Some(Named(label)))
-
-  override def asString: Seq[String] = groups.map(_.name)
-}
-
-object GroupInstancePath {
+object Path {
   val empty = new GroupInstancePath(Seq.empty)
-}
+  def apply(name: String): GroupOrFieldPath = new GroupOrFieldPath(Seq.empty, Named(name))
+  def apply(groups: Seq[Indexed], name: String): GroupOrFieldPath = new GroupOrFieldPath(groups, Named(name))
 
-case class AnyPath(groups: Seq[Indexed], named: Option[Named]) extends Path {
-  def depth: Int = groups.size + named.map(_ => 1).getOrElse(0)
-
-  def appendGroup(name: String) = this match {
-    case AnyPath(_, Some(_)) => Left(PathError(s"Can't append group to $this"))
-    case AnyPath(els, None) => Right(new AnyPath(els, Some(Named(name))))
+  def apply(groups: Seq[Indexed], name: Option[Named]): Path = name match {
+    case Some(n) => new GroupOrFieldPath(groups, n)
+    case None => new GroupInstancePath(groups)
   }
 
-  override def asString: Seq[String] = groups.map(_.name) ++ named.map(_.name).toList
-}
-
-object AnyPath {
-  def apply(ixs: Indexed*) = new AnyPath(ixs, None)
-  def apply(name: String) = new AnyPath(List(), Some(Named(name)))
-  def apply(g1: String, ix1: Int, f1: String) = new AnyPath(List(Indexed(g1, ix1)), Some(Named(f1)))
-
-  val empty = new AnyPath(Seq.empty, None)
-
-  def parsePath(path: String): Either[DocumentError, AnyPath] = {
-    def fromPathElements(patheElements: List[PathElement]): Either[DocumentError, AnyPath] = {
+  def parsePath(path: String): Either[DocumentError, Path] = {
+    def fromPathElements(patheElements: List[PathElement]): Either[DocumentError, Path] = {
       val initial: Either[DocumentError, (List[Indexed], Option[Named])] = (List.empty[Indexed], None).asRight
       patheElements
         .foldLeft(initial) {
@@ -56,7 +36,7 @@ object AnyPath {
             }
         }
         .map {
-          case (groups, named) => new AnyPath(groups, named)
+          case (groups, named) => Path(groups, named)
         }
     }
 
@@ -79,4 +59,30 @@ object AnyPath {
       fromPathElements(els)
     }
   }
+}
+
+case class GroupInstancePath(groups: Seq[Indexed]) extends Path {
+  def appendField(label: String): Path = new GroupOrFieldPath(groups, Named(label))
+
+  def appendGroup(label: String): GroupOrFieldPath = new GroupOrFieldPath(groups, Named(label))
+  def appendGroupAt(label: String, ix: Int): GroupInstancePath = new GroupInstancePath(groups :+ Indexed(label, ix))
+
+  override def asStrings: Seq[String] = groups.map(_.name)
+}
+
+object GroupInstancePath {
+  val empty = new GroupInstancePath(Seq.empty)
+}
+
+case class GroupOrFieldPath(groups: Seq[Indexed], named: Named) extends Path {
+  def depth: Int = groups.size + 1
+
+  def at(ix: Int) = new GroupInstancePath(groups :+ Indexed(named.name, ix))
+
+  override def asStrings: Seq[String] = groups.map(_.name) :+ named.name
+}
+
+object GroupOrFieldPath {
+  def apply(name: String) = new GroupOrFieldPath(List(), Named(name))
+  def apply(g1: String, ix1: Int, f1: String) = new GroupOrFieldPath(List(Indexed(g1, ix1)), Named(f1))
 }

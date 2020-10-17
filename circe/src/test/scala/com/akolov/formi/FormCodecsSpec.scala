@@ -15,6 +15,10 @@ import scala.io.Source
 class FormCodecsSpec extends AnyFlatSpecLike with Matchers with CvTestData with FormCodecs {
   val logger = getLogger
 
+  val labelsProvider = new LabelsProvider {
+    override def findLabel(els: Seq[String]): Option[String] = Some(s"""{${els.mkString(".")}}""")
+  }
+
   val printer = Printer.spaces2.copy(dropNullValues = true)
 
   "template json encoder" should "print a template" in {
@@ -31,7 +35,12 @@ class FormCodecsSpec extends AnyFlatSpecLike with Matchers with CvTestData with 
 
   "entry form json encoder" should "print a entry form" in {
     val json =
-      EntryForm.renderSingleGroup(testTemplate.body, testTemplate.body.singleEmpty).right.get.asJson.printWith(printer)
+      EntryForm
+        .renderEntryForm(labelsProvider, testTemplate.body, testTemplate.body.singleEmpty)
+        .right
+        .get
+        .asJson
+        .printWith(printer)
     logger.info(json)
     json.length should be > 1
   }
