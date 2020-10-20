@@ -13,8 +13,8 @@ case class SingleGroupView(label: String, entries: Seq[View])
 object Rendered {
 
   def render(el: TemplateElement, value: Value): Either[DocumentError, View] = (el, value) match {
-    case (f @ Field(_, _, _), fv @ FieldValue(_)) => renderField(f, fv)
-    case (g @ Group(_, _, _, _), GroupValue(vals)) =>
+    case (f @ Field(_, _), fv @ FieldValue(_)) => renderField(f, fv)
+    case (g @ Group(_, _, _), GroupValue(vals)) =>
       vals
         .map(sgv => renderSingleGroup(g, sgv))
         .toList
