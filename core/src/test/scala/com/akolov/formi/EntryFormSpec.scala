@@ -26,8 +26,9 @@ class EntryFormSpec extends AnyFlatSpecLike with Matchers with CvTestData {
           Multiplicity.Once,
           List(
             List(
-              FieldEntry("name", "{cv.head.name}", Text(Some(50), None), FieldValue(None)),
-              FieldEntry("title", "{cv.head.title}", Text(Some(50), None), FieldValue(None))))
+              FieldEntry("name", "{cv.head.name}", InputDesc(`type` = "text", maxLength = Some(50)), FieldValue(None)),
+              FieldEntry("title", "{cv.head.title}", InputDesc(`type` = "text", maxLength = Some(50)), FieldValue(None))
+            ))
         ),
         GroupEntry(
           "info",
@@ -35,8 +36,13 @@ class EntryFormSpec extends AnyFlatSpecLike with Matchers with CvTestData {
           Multiplicity.Once,
           List(
             List(
-              FieldEntry("phone", "{cv.info.phone}", Text(Some(12), None), FieldValue(None)),
-              FieldEntry("email", "{cv.info.email}", Text(Some(25), None), FieldValue(None))))
+              FieldEntry(
+                "phone",
+                "{cv.info.phone}",
+                InputDesc(`type` = "text", maxLength = Some(12)),
+                FieldValue(None)),
+              FieldEntry("email", "{cv.info.email}", InputDesc(`type` = "text", maxLength = Some(25)), FieldValue(None))
+            ))
         ),
         GroupEntry(
           "links",
@@ -49,8 +55,16 @@ class EntryFormSpec extends AnyFlatSpecLike with Matchers with CvTestData {
                 "{cv.links.link}",
                 Multiplicity.AtLeastOnce,
                 List(List(
-                  FieldEntry("linkName", "{cv.links.link.linkName}", Text(Some(12), None), FieldValue(None)),
-                  FieldEntry("linkValue", "{cv.links.link.linkValue}", Text(Some(25), None), FieldValue(None))
+                  FieldEntry(
+                    "linkName",
+                    "{cv.links.link.linkName}",
+                    InputDesc(`type` = "text", maxLength = Some(12)),
+                    FieldValue(None)),
+                  FieldEntry(
+                    "linkValue",
+                    "{cv.links.link.linkValue}",
+                    InputDesc(`type` = "text", maxLength = Some(25)),
+                    FieldValue(None))
                 ))
               ))
           )

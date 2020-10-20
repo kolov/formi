@@ -57,7 +57,7 @@ class LensMultiplicitySpec extends AnyFlatSpecLike with Matchers with CvTestData
   }
 
   "lens" should "insert an empty group at index 2 when 'at least 2''" in {
-    val innerGroup = Group("inner", List(Field("text", Text())), Multiplicity.atLeast(2))
+    val innerGroup = Group("inner", List(Field("text", InputDesc("text"))), Multiplicity.atLeast(2))
     val outerGroup = Group("outer", List(innerGroup), Multiplicity.Once)
     val sgv: SingleGroupValue = outerGroup.singleEmpty
     (for {

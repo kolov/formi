@@ -16,10 +16,16 @@ object Multiplicity {
   def apply(minOccurs: Int, maxOccurs: Int) = new Multiplicity(minOccurs, Some(maxOccurs))
 }
 
-sealed trait InputDesc
-case class Text(maxLength: Option[Int] = None, pattern: Option[String] = None) extends InputDesc
-case class MultilineText(lines: Option[Int] = None) extends InputDesc
-case class Date(notBefore: Option[LocalDate]) extends InputDesc
+case class InputDesc(
+  `type`: String,
+  multiline: Option[Boolean] = None,
+  maxLength: Option[Int] = None,
+  pattern: Option[String] = None,
+  lines: Option[Int] = None,
+  notBefore: Option[LocalDate] = None,
+  inputLength: Option[Int] = None,
+  inline: Option[Boolean] = None
+)
 
 sealed trait Element
 

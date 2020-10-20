@@ -11,30 +11,30 @@ class RenderedSpec extends AnyFlatSpecLike with Matchers {
 
   "field renderer" should "render field with valu" in {
     val nameFieldElement: Field =
-      Field(label = "name", Text())
+      Field(label = "name", InputDesc("text"))
     val entry = Rendered.render(nameFieldElement, FieldValue("George"))
     entry shouldEqual FieldView("name", Some("George")).asRight
   }
 
   "group renderer" should "render error on wrong value " in {
-    val firstName: Field = Field("firstName", Text())
-    val secondName: Field = Field("secondName", Text())
+    val firstName: Field = Field("firstName", InputDesc("text"))
+    val secondName: Field = Field("secondName", InputDesc("text"))
     val group = Group("name", List(firstName, secondName))
     val entry = Rendered.render(group, FieldValue("George"))
     entry.isLeft shouldEqual true
   }
 
   "group renderer" should "render error on missing group value value " in {
-    val firstName: Field = Field("firstName", Text())
-    val secondName: Field = Field("secondName", Text())
+    val firstName: Field = Field("firstName", InputDesc("text"))
+    val secondName: Field = Field("secondName", InputDesc("text"))
     val group = Group("name", List(firstName, secondName))
     val entry = Rendered.render(group, GroupValue(Vector(SingleGroupValue(Map("xxx" -> FieldValue("George"))))))
     entry.isLeft shouldEqual true
   }
 
   "group renderer" should "render error on good value " in {
-    val firstName: Field = Field("firstName", Text())
-    val secondName: Field = Field("secondName", Text())
+    val firstName: Field = Field("firstName", InputDesc("text"))
+    val secondName: Field = Field("secondName", InputDesc("text"))
     val group = Group("fullName", List(firstName, secondName))
     val entry = Rendered.render(
       group,

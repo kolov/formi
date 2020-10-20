@@ -8,7 +8,7 @@ object CompactTemplate {
   import com.akolov.{formi => F}
 
   val defaultMultiplicity = Multiplicity.Once
-  val defaultFieldDesc = Text()
+  val defaultFieldDesc = InputDesc(`type` = "text")
 
   sealed trait CompactTemplateElement
   case class Field(label: String, input: Option[InputDesc], desc: Option[String]) extends CompactTemplateElement {}

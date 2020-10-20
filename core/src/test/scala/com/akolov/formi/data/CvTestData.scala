@@ -2,11 +2,9 @@ package com.akolov.formi.data
 
 import com.akolov.formi._
 
-import scala.io.Source
-
 trait CvTestData {
-  val nameFieldElement: Field = Field(label = "name", input = Text(maxLength = Some(50), pattern = None))
-  val titleFieldElement: Field = Field(label = "title", input = Text(Some(50)))
+  val nameFieldElement: Field = Field(label = "name", input = InputDesc("text", maxLength = Some(50), pattern = None))
+  val titleFieldElement: Field = Field(label = "title", input = InputDesc(`type` = "text", maxLength = Some(50)))
 
   val headGroupElement: Group = Group(
     "head",
@@ -18,15 +16,16 @@ trait CvTestData {
   val infoGroupElement: Group = Group(
     "info",
     fields = List(
-      Field(label = "phone", input = Text(Some(12))),
-      Field(label = "email", input = Text(Some(25)))
-    ))
+      Field(label = "phone", input = InputDesc(`type` = "text", maxLength = Some(12))),
+      Field(label = "email", input = InputDesc(`type` = "text", maxLength = (Some(25))))
+    )
+  )
 
   val linkGroupElement: Group = Group(
     "link",
     fields = List(
-      Field(label = "linkName", input = Text(Some(12))),
-      Field(label = "linkValue", input = Text(Some(25)))
+      Field(label = "linkName", input = InputDesc(`type` = "text", maxLength = Some(12))),
+      Field(label = "linkValue", input = InputDesc(`type` = "text", maxLength = Some(25)))
     ),
     multiplicity = Multiplicity.AtLeastOnce
   )
