@@ -28,6 +28,10 @@ case class GroupEntry(
 object EntryForm {
   val logger = getLogger
 
+  private def findInputHint(path: Path, labelsProvider: LabelsProvider): Option[String] = {
+    labelsProvider.findLabel(path.asStrings :+ "hint")
+  }
+
   private def render(
     path: GroupInstancePath,
     templateElement: TemplateElement,
@@ -43,7 +47,12 @@ object EntryForm {
           }
         }.toList.sequence.map { vals =>
           val translated = prov.getLabel(path.appendGroup(group.label))
-          GroupEntry(group.label, translated, group.multiplicity, vals, group.desc)
+          GroupEntry(
+            group.label,
+            translated,
+            group.multiplicity,
+            vals,
+            findInputHint(path.appendGroup(group.label), prov))
         }
       case _ => BadValue().asLeft
     }
@@ -53,7 +62,12 @@ object EntryForm {
     path: GroupInstancePath,
     field: Field,
     fieldValue: FieldValue): Reader[LabelsProvider, FieldEntry] = Reader { prov =>
-    FieldEntry(field.label, prov.getLabel(path.appendField(field.label)), field.input, fieldValue, field.desc)
+    FieldEntry(
+      field.label,
+      prov.getLabel(path.appendField(field.label)),
+      field.input,
+      fieldValue,
+      findInputHint(path.appendField(field.label), prov))
   }
 
   private def renderSingleGroup(
