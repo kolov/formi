@@ -20,6 +20,7 @@ case class FieldEntry(
 case class GroupEntry(
   label: String,
   translatedLabel: String,
+  translatedInstanceLabel: String,
   multiplicity: Multiplicity,
   groupInstances: Seq[Seq[Entry]],
   desc: Option[String] = None)
@@ -28,6 +29,10 @@ case class GroupEntry(
 object EntryForm {
   val logger = getLogger
 
+  private def findInputHint(path: Path, labelsProvider: LabelsProvider): Option[String] = {
+    labelsProvider.findLabel(path.asStrings :+ "hint")
+  }
+
   private def render(
     path: GroupInstancePath,
     templateElement: TemplateElement,
@@ -35,15 +40,23 @@ object EntryForm {
     (templateElement, elementValue) match {
       case (field: Field, fieldValue: FieldValue) => renderField(path, field, fieldValue).run(prov).asRight
       case (group: Group, GroupValue(singleGroupValues)) =>
+        val groupPath = path.appendGroup(group.label)
         singleGroupValues.zipWithIndex.map {
           case (sgv, ix) => {
             val x: Either[DocumentError, List[Entry]] =
-              renderSingleGroup(path.appendGroup(group.label), group, ix, sgv).run(prov)
+              renderSingleGroup(groupPath, group, ix, sgv).run(prov)
             x
           }
         }.toList.sequence.map { vals =>
-          val translated = prov.getLabel(path.appendGroup(group.label))
-          GroupEntry(group.label, translated, group.multiplicity, vals, group.desc)
+          val translated = prov.getLabel(groupPath)
+          val translatedInstance = prov.findLabel(groupPath.asStrings :+ "instance").getOrElse(translated)
+          GroupEntry(
+            group.label,
+            translated,
+            translatedInstance,
+            group.multiplicity,
+            vals,
+            findInputHint(groupPath, prov))
         }
       case _ => BadValue().asLeft
     }
@@ -53,7 +66,12 @@ object EntryForm {
     path: GroupInstancePath,
     field: Field,
     fieldValue: FieldValue): Reader[LabelsProvider, FieldEntry] = Reader { prov =>
-    FieldEntry(field.label, prov.getLabel(path.appendField(field.label)), field.input, fieldValue, field.desc)
+    FieldEntry(
+      field.label,
+      prov.getLabel(path.appendField(field.label)),
+      field.input,
+      fieldValue,
+      findInputHint(path.appendField(field.label), prov))
   }
 
   private def renderSingleGroup(

@@ -19,7 +19,7 @@
             "Field": {
               "label": "address",
               "input": {
-                "MultilineText": {}
+                "type": "text"
               }
             }
           }

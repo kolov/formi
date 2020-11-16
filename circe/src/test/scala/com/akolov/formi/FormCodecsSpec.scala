@@ -1,7 +1,7 @@
 package com.akolov.formi
 
 import cats.implicits._
-import com.akolov.formi.compact.CompactTemplate
+import com.akolov.formi.compact.CompactTemplate.CompactTemplateElement
 import com.akolov.formi.data.CvTestData
 import io.circe.Printer
 import io.circe.jawn.decode
@@ -28,9 +28,9 @@ class FormCodecsSpec extends AnyFlatSpecLike with Matchers with CvTestData with 
   }
 
   "template json decoder" should "read template" in new TestContext {
-    val group = decode[CompactTemplate.Group](encoded)
+    val group = decode[CompactTemplateElement](encoded)
     logger.info(group.toString)
-    group.map(_.fields.length) shouldBe Right(3)
+    group.map(_.fields.get.length) shouldBe Right(4)
   }
 
   "entry form json encoder" should "print a entry form" in {
@@ -47,5 +47,5 @@ class FormCodecsSpec extends AnyFlatSpecLike with Matchers with CvTestData with 
 }
 
 trait TestContext {
-  val encoded = Source.fromResource("cv-simple.json").getLines().mkString("\n")
+  val encoded = Source.fromResource("cv-developer.json").getLines().mkString("\n")
 }

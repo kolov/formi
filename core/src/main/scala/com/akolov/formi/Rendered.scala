@@ -6,15 +6,15 @@ import cats.implicits._
 case class Document(template: Group, body: SingleGroupValue)
 
 trait View
-case class FieldView(label: String, value: Option[String]) extends View
+case class FieldView(label: String, value: Option[String], multiline: Boolean) extends View
 case class GroupView(label: String, entries: Seq[SingleGroupView]) extends View
 case class SingleGroupView(label: String, entries: Seq[View])
 
 object Rendered {
 
   def render(el: TemplateElement, value: Value): Either[DocumentError, View] = (el, value) match {
-    case (f @ Field(_, _, _), fv @ FieldValue(_)) => renderField(f, fv)
-    case (g @ Group(_, _, _, _), GroupValue(vals)) =>
+    case (f @ Field(_, _), fv @ FieldValue(_)) => renderField(f, fv)
+    case (g @ Group(_, _, _), GroupValue(vals)) =>
       vals
         .map(sgv => renderSingleGroup(g, sgv))
         .toList
@@ -22,7 +22,12 @@ object Rendered {
         .map(vals => GroupView(g.label, vals))
     case _ => BadValue().asLeft
   }
-  def renderField(field: Field, fieldValue: FieldValue) = FieldView(field.label, fieldValue.value).asRight
+
+  def renderField(field: Field, fieldValue: FieldValue) =
+    field.input.multiline match {
+      case Some(true) => FieldView(field.label, fieldValue.value, true).asRight
+      case _ => FieldView(field.label, fieldValue.value, false).asRight
+    }
 
   def renderSingleGroup(group: Group, singleGroupValue: SingleGroupValue): Either[DocumentError, SingleGroupView] = {
     val entries: Either[DocumentError, List[View]] = group.fields.map { te =>

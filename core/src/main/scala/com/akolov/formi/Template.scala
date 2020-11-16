@@ -16,10 +16,16 @@ object Multiplicity {
   def apply(minOccurs: Int, maxOccurs: Int) = new Multiplicity(minOccurs, Some(maxOccurs))
 }
 
-sealed trait InputDesc
-case class Text(maxLength: Option[Int] = None, pattern: Option[String] = None) extends InputDesc
-case class MultilineText(lines: Option[Int] = None) extends InputDesc
-case class Date(notBefore: Option[LocalDate]) extends InputDesc
+case class InputDesc(
+  `type`: String,
+  multiline: Option[Boolean] = None,
+  maxLength: Option[Int] = None,
+  pattern: Option[String] = None,
+  lines: Option[Int] = None,
+  notBefore: Option[LocalDate] = None,
+  inputLength: Option[Int] = None,
+  inline: Option[Boolean] = None
+)
 
 sealed trait Element
 
@@ -31,15 +37,11 @@ sealed trait TemplateElement extends Element {
   def empty: Value
 }
 
-case class Field(override val label: String, input: InputDesc, desc: Option[String] = None) extends TemplateElement {
+case class Field(override val label: String, input: InputDesc) extends TemplateElement {
   override def empty: Value = FieldValue.Empty
 }
 
-case class Group(
-  override val label: String,
-  fields: List[TemplateElement],
-  multiplicity: Multiplicity,
-  desc: Option[String] = None)
+case class Group(override val label: String, fields: List[TemplateElement], multiplicity: Multiplicity)
     extends TemplateElement {
   self =>
 

@@ -2,207 +2,160 @@
   "label": "cv",
   "fields": [
     {
-      "Group": {
-        "label": "head",
-        "fields": [
-          {
-            "Field": {
-              "label": "name"
-            }
-          },
-          {
-            "Field": {
-              "label": "email"
-            }
-          },
-          {
-            "Field": {
-              "label": "phone"
-            }
-          },
-          {
-            "Field": {
-              "label": "address",
-              "input": {
-                "MultilineText": {}
-              }
-            }
+      "label": "head",
+      "fields": [
+        {
+          "label": "name"
+        },
+        {
+          "label": "email"
+        },
+        {
+          "label": "phone"
+        },
+        {
+          "label": "address"
+        },
+        {
+          "label": "address",
+          "input": {
+            "type": "text",
+            "multiline": true,
+            "lines": 2
           }
-        ]
-      }
-    },
-    {
-      "Field": {
-        "label": "Introduction",
-        "input": {
-          "MultilineText": {}
         }
+      ]
+    },
+    {
+      "label": "intro",
+      "input": {
+        "type": "text",
+        "multiline": true,
+        "lines": 6
       }
     },
     {
-      "Group": {
-        "label": "summary",
-        "fields": [
-          {
-            "Group": {
-              "label": "Core Skills",
+      "label": "summary",
+      "fields": [
+        {
+          "label": "core-skills",
+          "fields": [
+            {
+              "label": "core-skills-line",
               "fields": [
                 {
-                  "Group": {
-                    "label": "line",
-                    "fields": [
-                      {
-                        "Field": {
-                          "label": "text"
-                        }
-                      }
-                    ],
-                    "multiplicity": {
-                      "minOccurs": 1
-                    }
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "Group": {
-              "label": "Education",
-              "fields": [
-                {
-                  "Group": {
-                    "label": "line",
-                    "fields": [
-                      {
-                        "Field": {
-                          "label": "text"
-                        }
-                      }
-                    ],
-                    "multiplicity": {
-                      "minOccurs": 1
-                    }
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "Group": {
-              "label": "Certificates",
-              "fields": [
-                {
-                  "Group": {
-                    "label": "line",
-                    "fields": [
-                      {
-                        "Field": {
-                          "label": "text"
-                        }
-                      }
-                    ],
-                    "multiplicity": {
-                      "minOccurs": 1
-                    }
-                  }
-                }
-              ],
-              "multiplicity": {
-                "minOccurs": 0,
-                "maxOccurs": 1
-              }
-            }
-          },
-          {
-            "Group": {
-              "label": "Languages",
-              "fields": [
-                {
-                  "Group": {
-                    "label": "line",
-                    "fields": [
-                      {
-                        "Field": {
-                          "label": "text"
-                        }
-                      }
-                    ],
-                    "multiplicity": {
-                      "minOccurs": 1
-                    }
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "Group": {
-        "label": "work-experience",
-        "fields": [
-          {
-            "Group": {
-              "label": "experience-entry",
-              "fields": [
-                {
-                  "Field": {
-                    "label": "company"
-                  }
-                },
-                {
-                  "Field": {
-                    "label": "start-date"
-                  }
-                },
-                {
-                  "Field": {
-                    "label": "end-date"
-                  }
-                },
-                {
-                  "Field": {
-                    "label": "Role"
-                  }
-                },
-                {
-                  "Group": {
-                    "label": "technology",
-                    "fields": [
-                      {
-                        "Group": {
-                          "label": "-",
-                          "fields": [
-                            {
-                              "Field": {
-                                "label": "entry"
-                              }
-                            }
-                          ],
-                          "multiplicity": {
-                            "minOccurs": 0
-                          }
-                        }
-                      }
-                    ]
-                  }
-                },
-                {
-                  "Field": {
-                    "label": "details",
-                    "input": {
-                      "MultilineText": {}
-                    }
-                  }
+                  "label": "text"
                 }
               ],
               "multiplicity": {
                 "minOccurs": 1
               }
             }
+          ]
+        },
+        {
+          "label": "education",
+          "fields": [
+            {
+              "label": "education-line",
+              "fields": [
+                {
+                  "label": "text"
+                }
+              ],
+              "multiplicity": {
+                "minOccurs": 1
+              }
+            }
+          ]
+        },
+        {
+          "label": "certificates",
+          "fields": [
+            {
+              "label": "certificates-line",
+              "fields": [
+                {
+                  "label": "text"
+                }
+              ],
+              "multiplicity": {
+                "minOccurs": 1
+              }
+            }
+          ],
+          "multiplicity": {
+            "minOccurs": 0,
+            "maxOccurs": 1
           }
-        ]
+        },
+        {
+          "label": "languages",
+          "fields": [
+            {
+              "label": "languages-line",
+              "fields": [
+                {
+                  "label": "text"
+                }
+              ],
+              "multiplicity": {
+                "minOccurs": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "work-experience",
+      "fields": [
+        {
+          "label": "position-head",
+          "fields": [
+            {
+              "label": "company"
+            },
+            {
+              "label": "start-date"
+            },
+            {
+              "label": "end-date"
+            }
+          ],
+          "multiplicity": {
+            "minOccurs": 1,
+            "maxOccurs": 1
+          }
+        },
+        {
+          "label": "role"
+        },
+        {
+          "label": "technology",
+          "fields": [
+            {
+              "label": "text",
+              "input": {
+                "type": "text",
+                "inline": true
+              }
+            }
+          ],
+          "multiplicity": {
+            "minOccurs": 0
+          }
+        },
+        {
+          "label": "details",
+          "input": {
+            "type": "text",
+            "multiline": true
+          }
+        }
+      ],
+      "multiplicity": {
+        "minOccurs": 1
       }
     }
   ]

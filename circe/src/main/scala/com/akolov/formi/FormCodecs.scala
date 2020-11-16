@@ -9,16 +9,8 @@ trait FormCodecs {
   implicit val encoderMultiplicity: Encoder[Multiplicity] = deriveEncoder
   implicit val decoderMultiplicity: Decoder[Multiplicity] = deriveDecoder
 
-  implicit val encoderTextField: Encoder[Text] = deriveEncoder
-  implicit val decoderTextField: Decoder[Text] = deriveDecoder
-  implicit val encoderMultilineText: Encoder[MultilineText] = deriveEncoder
-  implicit val decoderMultilineText: Decoder[MultilineText] = deriveDecoder
-
-  implicit val encoderDateField: Encoder[Date] = deriveEncoder
-  implicit val decoderDateField: Decoder[Date] = deriveDecoder
-
-  implicit val encoderInputParameters: Encoder[InputDesc] = deriveEncoder
-  implicit val decoderInputParameters: Decoder[InputDesc] = deriveDecoder
+  implicit val encoderInputDesc: Encoder[InputDesc] = deriveEncoder
+  implicit val decoderInputDesc: Decoder[InputDesc] = deriveDecoder
 
   implicit val encoderTemplateElement: Encoder[TemplateElement] = deriveEncoder
   implicit val decoderTemplateElement: Decoder[TemplateElement] = deriveDecoder
@@ -42,10 +34,6 @@ trait FormCodecs {
   implicit lazy val decoderGroup: Decoder[Group] = deriveDecoder[Group]
 
   // Compact template
-  implicit lazy val encoderCompactTemplateField: Encoder[CompactTemplate.Field] = deriveEncoder[CompactTemplate.Field]
-  implicit lazy val decoderCompactTemplateField: Decoder[CompactTemplate.Field] = deriveDecoder[CompactTemplate.Field]
-  implicit lazy val encoderCompactTemplateGroup: Encoder[CompactTemplate.Group] = deriveEncoder[CompactTemplate.Group]
-  implicit lazy val decoderCompactTemplateGroup: Decoder[CompactTemplate.Group] = deriveDecoder[CompactTemplate.Group]
   implicit val encoderCompactTemplateElement: Encoder[CompactTemplateElement] = deriveEncoder
   implicit val decoderCompactTemplateElement: Decoder[CompactTemplateElement] = deriveDecoder
 
