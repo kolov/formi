@@ -20,6 +20,7 @@ case class FieldEntry(
 case class GroupEntry(
   label: String,
   translatedLabel: String,
+  translatedInstanceLabel: String,
   multiplicity: Multiplicity,
   groupInstances: Seq[Seq[Entry]],
   desc: Option[String] = None)
@@ -39,20 +40,23 @@ object EntryForm {
     (templateElement, elementValue) match {
       case (field: Field, fieldValue: FieldValue) => renderField(path, field, fieldValue).run(prov).asRight
       case (group: Group, GroupValue(singleGroupValues)) =>
+        val groupPath = path.appendGroup(group.label)
         singleGroupValues.zipWithIndex.map {
           case (sgv, ix) => {
             val x: Either[DocumentError, List[Entry]] =
-              renderSingleGroup(path.appendGroup(group.label), group, ix, sgv).run(prov)
+              renderSingleGroup(groupPath, group, ix, sgv).run(prov)
             x
           }
         }.toList.sequence.map { vals =>
-          val translated = prov.getLabel(path.appendGroup(group.label))
+          val translated = prov.getLabel(groupPath)
+          val translatedInstance = prov.findLabel(groupPath.asStrings :+ "instance").getOrElse(translated)
           GroupEntry(
             group.label,
             translated,
+            translatedInstance,
             group.multiplicity,
             vals,
-            findInputHint(path.appendGroup(group.label), prov))
+            findInputHint(groupPath, prov))
         }
       case _ => BadValue().asLeft
     }

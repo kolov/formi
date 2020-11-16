@@ -13,7 +13,7 @@ class RenderedSpec extends AnyFlatSpecLike with Matchers {
     val nameFieldElement: Field =
       Field(label = "name", InputDesc("text"))
     val entry = Rendered.render(nameFieldElement, FieldValue("George"))
-    entry shouldEqual FieldView("name", Some("George")).asRight
+    entry shouldEqual FieldView("name", Some("George"), false).asRight
   }
 
   "group renderer" should "render error on wrong value " in {
@@ -46,7 +46,7 @@ class RenderedSpec extends AnyFlatSpecLike with Matchers {
       Vector(
         SingleGroupView(
           "fullName",
-          List(FieldView("firstName", Some("George")), FieldView("secondName", Some("Costanza")))))
+          List(FieldView("firstName", Some("George"), false), FieldView("secondName", Some("Costanza"), false))))
     ).asRight
   }
 }

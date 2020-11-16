@@ -1,7 +1,6 @@
 package com.akolov.formi
 
 import com.akolov.formi.data.CvTestData
-import com.akolov.formi.lenses.GroupInstancePath
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
 
@@ -23,16 +22,29 @@ class EntryFormSpec extends AnyFlatSpecLike with Matchers with CvTestData {
         GroupEntry(
           "head",
           "{cv.head}",
+          "{cv.head.instance}",
           Multiplicity.Once,
           List(
             List(
-              FieldEntry("name", "{cv.head.name}", InputDesc(`type` = "text", maxLength = Some(50)), FieldValue(None)),
-              FieldEntry("title", "{cv.head.title}", InputDesc(`type` = "text", maxLength = Some(50)), FieldValue(None))
-            ))
+              FieldEntry(
+                "name",
+                "{cv.head.name}",
+                InputDesc(`type` = "text", maxLength = Some(50)),
+                FieldValue(None),
+                Some("{cv.head.name.hint}")),
+              FieldEntry(
+                "title",
+                "{cv.head.title}",
+                InputDesc(`type` = "text", maxLength = Some(50)),
+                FieldValue(None),
+                Some("{cv.head.title.hint}"))
+            )),
+          Some("{cv.head.hint}")
         ),
         GroupEntry(
           "info",
           "{cv.info}",
+          "{cv.info.instance}",
           Multiplicity.Once,
           List(
             List(
@@ -40,34 +52,47 @@ class EntryFormSpec extends AnyFlatSpecLike with Matchers with CvTestData {
                 "phone",
                 "{cv.info.phone}",
                 InputDesc(`type` = "text", maxLength = Some(12)),
-                FieldValue(None)),
-              FieldEntry("email", "{cv.info.email}", InputDesc(`type` = "text", maxLength = Some(25)), FieldValue(None))
-            ))
+                FieldValue(None),
+                Some("{cv.info.phone.hint}")),
+              FieldEntry(
+                "email",
+                "{cv.info.email}",
+                InputDesc(`type` = "text", maxLength = Some(25)),
+                FieldValue(None),
+                Some("{cv.info.email.hint}"))
+            )),
+          Some("{cv.info.hint}")
         ),
         GroupEntry(
           "links",
           "{cv.links}",
+          "{cv.links.instance}",
           Multiplicity.Once,
           List(
             List(
               GroupEntry(
                 "link",
                 "{cv.links.link}",
+                "{cv.links.link.instance}",
                 Multiplicity.AtLeastOnce,
                 List(List(
                   FieldEntry(
                     "linkName",
                     "{cv.links.link.linkName}",
                     InputDesc(`type` = "text", maxLength = Some(12)),
-                    FieldValue(None)),
+                    FieldValue(None),
+                    Some("{cv.links.link.linkName.hint}")),
                   FieldEntry(
                     "linkValue",
                     "{cv.links.link.linkValue}",
                     InputDesc(`type` = "text", maxLength = Some(25)),
-                    FieldValue(None))
-                ))
+                    FieldValue(None),
+                    Some("{cv.links.link.linkValue.hint}"))
+                )),
+                Some("{cv.links.link.hint}")
               ))
-          )
+          ),
+          Some("{cv.links.hint}")
         )
       )
   }

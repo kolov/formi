@@ -15,7 +15,7 @@ package object syntax {
         .foldLeft[Option[Group]](Some(group)) {
           case (Some(g), name) =>
             g.fields.find(_.label == name) match {
-              case Some(ng @ Group(_, _, _, _)) => Some(ng)
+              case Some(ng @ Group(_, _, _)) => Some(ng)
               case _ => None
             }
         }

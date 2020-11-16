@@ -20,7 +20,7 @@ class MoreLensSpec extends AnyFlatSpecLike with Matchers with CvTestData with Fo
     val content = template.singleEmpty
 
     val newValue = for {
-      path <- Path.parsePath("/work-experience[0]/experience-entry[0]/company")
+      path <- Path.parsePath("/work-experience[0]/position-head[0]/company")
       gfLens <- lensFor(template, path)
       fl <- gfLens.asFieldLens
       updated <- fl.set(content, FieldValue("Acme"))

@@ -25,7 +25,8 @@
               "label": "address",
               "input": {
                 "type": "text",
-                "multiline": true
+                "multiline": true,
+                "lines": 2
               }
             }
           }
@@ -34,9 +35,11 @@
     },
     {
       "Field": {
-        "label": "Introduction",
+        "label": "intro",
         "input": {
-          "type": "text"
+          "type": "text",
+          "multiline": true,
+          "lines": 6
         }
       }
     },
@@ -46,11 +49,11 @@
         "fields": [
           {
             "Group": {
-              "label": "Core Skills",
+              "label": "core-skills",
               "fields": [
                 {
                   "Group": {
-                    "label": "line",
+                    "label": "core-skills-line",
                     "fields": [
                       {
                         "Field": {
@@ -68,11 +71,11 @@
           },
           {
             "Group": {
-              "label": "Education",
+              "label": "education",
               "fields": [
                 {
                   "Group": {
-                    "label": "line",
+                    "label": "education-line",
                     "fields": [
                       {
                         "Field": {
@@ -90,11 +93,11 @@
           },
           {
             "Group": {
-              "label": "Certificates",
+              "label": "certificates",
               "fields": [
                 {
                   "Group": {
-                    "label": "line",
+                    "label": "certificates-line",
                     "fields": [
                       {
                         "Field": {
@@ -116,11 +119,11 @@
           },
           {
             "Group": {
-              "label": "Languages",
+              "label": "languages",
               "fields": [
                 {
                   "Group": {
-                    "label": "line",
+                    "label": "languages-line",
                     "fields": [
                       {
                         "Field": {
@@ -145,7 +148,7 @@
         "fields": [
           {
             "Group": {
-              "label": "experience-entry",
+              "label": "position-head",
               "fields": [
                 {
                   "Field": {
@@ -161,49 +164,51 @@
                   "Field": {
                     "label": "end-date"
                   }
-                },
+                }
+              ],
+              "multiplicity": {
+                "minOccurs": 1,
+                "maxOccurs": 1
+              }
+            }
+          },
+          {
+            "Field": {
+              "label": "role"
+            }
+          },
+          {
+            "Group": {
+              "label": "technology",
+              "fields": [
                 {
                   "Field": {
-                    "label": "Role"
-                  }
-                },
-                {
-                  "Group": {
-                    "label": "technology",
-                    "fields": [
-                      {
-                        "Group": {
-                          "label": "-",
-                          "fields": [
-                            {
-                              "Field": {
-                                "label": "entry"
-                              }
-                            }
-                          ],
-                          "multiplicity": {
-                            "minOccurs": 0
-                          }
-                        }
-                      }
-                    ]
-                  }
-                },
-                {
-                  "Field": {
-                    "label": "details",
+                    "label": "text",
                     "input": {
-                      "type": "text"
+                      "type": "text",
+                      "inline": true
                     }
                   }
                 }
               ],
               "multiplicity": {
-                "minOccurs": 1
+                "minOccurs": 0
+              }
+            }
+          },
+          {
+            "Field": {
+              "label": "details",
+              "input": {
+                "type": "text",
+                "multiline": true
               }
             }
           }
-        ]
+        ],
+        "multiplicity": {
+          "minOccurs": 1
+        }
       }
     }
   ]
